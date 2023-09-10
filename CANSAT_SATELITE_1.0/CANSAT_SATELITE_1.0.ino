@@ -4,6 +4,9 @@
 #include <XBee.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include <SD.h>
+
+File dataFile;
 
 // Xbeee
 XBee xbee = XBee();
@@ -60,31 +63,28 @@ gyro gyroSpinRate;
 
 void setup()
 {
-  Serial.begin(9600);
-  while (!Serial)
-    delay(10);
 
   Serial1.begin(9600);
   xbee.setSerial(Serial1);
-
-  if (!bno.begin())
-  {
-    /* There was a problem detecting the BNO055 ... check your connections */
-    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-    while (1)
-      ;
-  }
-  // BMP setup
-  if (!bmp.begin_I2C(119, &Wire1))
-  {
-    Serial.println("Could not find a valid BMP3 sensor, check wiring!");
-    while (1)
-      ;
-  }
+  bno.begin();
+  // if (!bno.begin())
+  // {
+  //   /* There was a problem detecting the BNO055 ... check your connections */
+  //   Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+  //   while (1);
+  // }
+  // //BMP setup
+  // if (!bmp.begin_I2C(119,&Wire1)) {
+  //   Serial.println("Could not find a valid BMP3 sensor, check wiring!");
+  //   while (1);
+  // }
+  bmp.begin_I2C(119, &Wire1);
   bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
   bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
   bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
   bmp.setOutputDataRate(BMP3_ODR_50_HZ);
+
+  SD.begin(BUILTIN_SDCARD);
 
   delay(1000);
 }
@@ -105,20 +105,20 @@ void loop()
 void generateTelemetry()
 {
   packetCount++;
-  // altitudee = 343;;
-  altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
-  // pressure = 342.34;
-  pressure = bmp.pressure;
-  // temperature = 34;;
-  temperature = bmp.temperature;
+  altitudee = 343;
+  // altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+  pressure = 342.34;
+  // pressure = bmp.pressure;
+  temperature = 34;
+  // temperature = bmp.temperature;
   voltage = getVoltage();
   gnssTime = getGnssTime();
   gnssLongitude = getGnssLongitude();
   gnssLatitude = getGnssLatitude();
   gnssAltitude = getGnssAltitude();
   gnssSats = getGnssSats();
-  getAccelerometerData();
-  getGyroSpinRate();
+  // getAccelerometerData();
+  // getGyroSpinRate();
 
   snprintf(telemetry, MAX_TELEMETRY_SIZE,
            "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r\n",
@@ -133,6 +133,21 @@ void transmitTelemetry()
 {
   Serial.println(telemetry);
   Serial.println("Send ");
+  dataFile = SD.open("telemetry.csv", FILE_WRITE);
+
+  // Check if the file opened successfully
+  if (dataFile)
+  {
+    // Append the telemetry data to the CSV file
+    dataFile.println(telemetry);
+
+    // Close the file
+    dataFile.close();
+  }
+  else
+  {
+    Serial.println("Error opening telemetry.csv for writing");
+  }
   zbTx = ZBTxRequest(addr64, (uint8_t *)telemetry, strlen(telemetry));
   xbee.send(zbTx);
   Serial.print("Telemetry = ");
