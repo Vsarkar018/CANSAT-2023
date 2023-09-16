@@ -5,6 +5,11 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <SD.h>
+#include <SoftwareSerial.h>
+#include <TinyGPS++.h>
+
+SoftwareSerial gpsSerial(0, 1); // RX, TX pins for GPS module
+TinyGPSPlus gps;
 
 File dataFile;
 
@@ -31,6 +36,7 @@ unsigned long currentMillis = 0;
 char telemetry[MAX_TELEMETRY_SIZE];
 
 // Sensor Readings......
+
 const char *teamID = "2022ASI-043";
 unsigned int packetCount = 0;
 unsigned long timeStamping = currentMillis / 1000;
@@ -65,6 +71,7 @@ void setup()
 {
 
   Serial1.begin(9600);
+  gpsSerial.begin(9600);
   xbee.setSerial(Serial1);
   bno.begin();
   // if (!bno.begin())
@@ -105,20 +112,20 @@ void loop()
 void generateTelemetry()
 {
   packetCount++;
-  altitudee = 343;
-  // altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
-  pressure = 342.34;
-  // pressure = bmp.pressure;
-  temperature = 34;
-  // temperature = bmp.temperature;
+  // altitudee = 343;
+  altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+  // pressure = 342.34;
+  pressure = bmp.pressure;
+  // temperature = 34;
+  temperature = bmp.temperature;
   voltage = getVoltage();
   gnssTime = getGnssTime();
   gnssLongitude = getGnssLongitude();
   gnssLatitude = getGnssLatitude();
   gnssAltitude = getGnssAltitude();
   gnssSats = getGnssSats();
-  // getAccelerometerData();
-  // getGyroSpinRate();
+  getAccelerometerData();
+  getGyroSpinRate();
 
   snprintf(telemetry, MAX_TELEMETRY_SIZE,
            "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r\n",
@@ -198,27 +205,3 @@ void getGyroSpinRate()
   gyroSpinRate.y = gyroEvent.gyro.y;
   gyroSpinRate.z = gyroEvent.gyro.z;
 }
-
-// float getPressure(){
-//   float pres = bmp.pressure;
-//   Serial.print("Pressure = ");
-//   Serial.println(pres);
-//   Serial.println(" Pa");
-//   return pres;
-// }
-//
-// float getTemperaturee(){
-//   float temp = bmp.temperature;
-//   Serial.print("Temperature = ");
-//   Serial.println(temp);
-//   Serial.println(" *C");
-//   return temp;
-// }
-//
-// float getAltitude(){
-//   float alti = bmp.readAltitude(SEALEVELPRESSURE_HPA);
-//   Serial.print("Approx. Altitude = ");
-//   Serial.print(alti);
-//   Serial.println(" m");
-//   return alti;
-// }

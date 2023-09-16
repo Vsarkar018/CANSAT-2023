@@ -1,44 +1,44 @@
-import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { useState } from "react";
 import "./App.css";
-import io from "socket.io-client";
-
-const ENDPOINT = "http://127.0.0.1:5000";
-let socket;
+import Row from "./Components/Row";
+import Team from "./Components/Team";
+import Overview from "./Components/DataComponent/Overview";
+import Temperature from "./Components/DataComponent/Temperature";
+import Speed from "./Components/DataComponent/Speed";
+import Pressure from "./Components/DataComponent/Pressure";
+import Acceleration from "./Components/DataComponent/Acceleration";
+import Location from "./Components/DataComponent/Location";
+import Roll from "./Components/DataComponent/Roll";
+import Pitch from "./Components/DataComponent/Pitch";
+import Table from "./Components/DataComponent/Table";
 function App() {
-  const [count, setCount] = useState(0);
-  const [data, setData] = useState();
-  useEffect(() => {
-    socket = io(ENDPOINT);
-    socket.on("telemetry", (tele) => {
-      setData(tele);
-    });
-  }, [data]);
-  console.log(data);
+  const [variable, setVariable] = useState(0);
+  console.log(variable);
+
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div
+      className="flex justify-center flex-col gap bg-black"
+      style={{ height: "100vh" }}
+    >
+      <div style={{ height: "65%" }} className="flex flex-col gap-1">
+        <Row>
+          <Overview />
+          <Temperature />
+          <Pressure />
+          <Team />
+        </Row>
+        <Row>
+          <Acceleration />
+          <Speed />
+          <Roll />
+          <Pitch />
+        </Row>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      <div style={{ height: "35%" }} className="flex ">
+        <Table />
+        <Location />
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   );
 }
 
