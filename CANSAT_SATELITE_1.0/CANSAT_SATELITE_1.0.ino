@@ -20,14 +20,14 @@ ZBTxRequest zbTx;
 
 // BNO
 uint16_t BNO055_SAMPLERATE_DELAY_MS = 100;
-Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
+Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire1);
 
 // BMP
 #include "Adafruit_BMP3XX.h"
 #define SEALEVELPRESSURE_HPA (1013.25)
 Adafruit_BMP3XX bmp;
 
-const long interval = 800;
+const long interval = 500;
 unsigned long previousMillis = 0;
 unsigned long currentMillis = 0;
 
@@ -70,9 +70,9 @@ gyro gyroSpinRate;
 void setup()
 {
 
-  Serial1.begin(9600);
+  Serial2.begin(9600);
   gpsSerial.begin(9600);
-  xbee.setSerial(Serial1);
+  xbee.setSerial(Serial2);
   bno.begin();
   // if (!bno.begin())
   // {
@@ -85,7 +85,7 @@ void setup()
   //   Serial.println("Could not find a valid BMP3 sensor, check wiring!");
   //   while (1);
   // }
-  bmp.begin_I2C(119, &Wire1);
+  bmp.begin_I2C(119, &Wire);
   bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
   bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
   bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
@@ -104,6 +104,7 @@ void loop()
     Serial.println("Transmitting.....");
     timeStamping = currentMillis / 1000;
     generateTelemetry();
+      transmitTelemetry();
     previousMillis = currentMillis;
   }
   Serial.println();
@@ -132,14 +133,30 @@ void generateTelemetry()
            teamID, timeStamping, packetCount, altitudee, pressure,
            temperature, voltage, gnssTime, gnssLatitude, gnssLongitude,
            gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y, accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z);
+          Serial.print("Telemetry = ");
+          Serial.println(telemetry);
+          writeDatainSD();
+    
 
-  transmitTelemetry();
 }
 
 void transmitTelemetry()
 {
-  Serial.println(telemetry);
+      Serial.println(telemetry);
   Serial.println("Send ");
+
+  zbTx = ZBTxRequest(addr64, (uint8_t *)telemetry, strlen(telemetry));
+  xbee.send(zbTx);
+  Serial.print("Telemetry = ");
+  Serial.println(telemetry);
+}
+
+
+
+
+
+void writeDatainSD(){
+
   dataFile = SD.open("telemetry.csv", FILE_WRITE);
 
   // Check if the file opened successfully
@@ -155,10 +172,7 @@ void transmitTelemetry()
   {
     Serial.println("Error opening telemetry.csv for writing");
   }
-  zbTx = ZBTxRequest(addr64, (uint8_t *)telemetry, strlen(telemetry));
-  xbee.send(zbTx);
-  Serial.print("Telemetry = ");
-  Serial.println(telemetry);
+
 }
 
 float getVoltage()

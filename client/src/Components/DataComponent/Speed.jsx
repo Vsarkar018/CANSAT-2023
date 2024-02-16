@@ -63,7 +63,7 @@ const Speed = () => {
       className="p-0 m-0  flex items-center flex-col"
     >
       <Line data={pressureData} options={options} />
-      <p className="text-white font-thin text-sm">Speed</p>
+      <p className="text-white font-thin text-lg">Speed</p>
     </div>
   );
 };

@@ -34,9 +34,13 @@ function App() {
           <Pitch />
         </Row>
       </div>
-      <div style={{ height: "35%" }} className="flex ">
-        <Table />
-        <Location />
+      <div style={{ height: "35%" }} className="flex">
+        <div style={{ width: "60%", height: "100%" }} className="flex">
+          <Table />
+        </div>
+        <div style={{ width: "40%" }}>
+          <Location />
+        </div>
       </div>
     </div>
   );

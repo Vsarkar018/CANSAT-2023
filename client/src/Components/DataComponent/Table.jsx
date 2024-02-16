@@ -37,7 +37,7 @@ const Table = () => {
     <>
       <div
         className="flex flex-col text-white w-4 bg-blue-700"
-        style={{ fontSize: "12px" }}
+        style={{ fontSize: "20px", width: "2%" }}
       >
         {[...text].map((char, index) => (
           <span key={index} style={{ rotate: "90" }}>
@@ -45,7 +45,10 @@ const Table = () => {
           </span>
         ))}
       </div>
-      <div style={{ fontSize: "8px" }} className="text-cyan-50 flex">
+      <div
+        style={{ fontSize: "15px", width: "100%", marginTop: "10 px" }}
+        className="text-cyan-50 flex"
+      >
         <table
           border="1"
           cellSpacing="50"

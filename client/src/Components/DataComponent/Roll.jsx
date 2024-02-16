@@ -1,50 +1,57 @@
-import React, { useState } from "react";
-import { Radar } from "react-chartjs-2";
-import { Chart as ChartJS } from "chart.js/auto";
+// src/GyroscopicChart.js
+
+import React from "react";
+import { Line } from "react-chartjs-2";
+const gyroscopicData = [
+  { x: 0, y: 10, z: -20 },
+  { x: 1, y: 20, z: -15 },
+  // ... more data points
+];
 const Roll = () => {
   const data = {
-    labels: ["Roll", "Pitch", "Yaw"],
+    labels: Array.from({ length: gyroscopicData.length }, (_, i) => i + 1),
     datasets: [
       {
-        label: "Data",
-        borderColor: "blue",
-        pointBorderColor: "#fff",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: "rgba(179,181,198,1)",
-        data: [65, 59, 80],
+        label: "X",
+        borderColor: "rgba(255, 99, 132, 1)",
+        data: gyroscopicData.map((dataPoint) => dataPoint.x),
         fill: false,
-        borderWidth: 1, // Adjust the line width
-        pointRadius: 0,
+      },
+      {
+        label: "Y",
+        borderColor: "rgba(54, 162, 235, 1)",
+        data: gyroscopicData.map((dataPoint) => dataPoint.y),
+        fill: false,
+      },
+      {
+        label: "Z",
+        borderColor: "rgba(75, 192, 192, 1)",
+        data: gyroscopicData.map((dataPoint) => dataPoint.z),
+        fill: false,
       },
     ],
   };
 
   const options = {
-    scale: {
-      angleLines: {
-        display: true,
+    scales: {
+      x: {
+        type: "linear",
+        position: "bottom",
+        beginAtZero: true,
       },
-      ticks: {
-        font: {
-          size: 4,
+      y: {
+        min: -360,
+        max: 360,
+        ticks: {
+          stepSize: 90,
         },
-        suggestedMin: 0,
-        suggestedMax: 100,
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
       },
     },
   };
 
   return (
-    <div
-      style={{ width: "100%", height: "100%" }}
-      className="p-0 m-0 bg-black flex items-center "
-    >
-      <Radar data={data} options={options} />
+    <div>
+      <Line data={data} options={options} />
     </div>
   );
 };
