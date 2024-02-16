@@ -28,6 +28,6 @@ serialPort.on("open", () => {
 parser.on("data", telemetry => {
   const frame = xbee.parseFrame(telemetry);
   const tele = frame.data.toString("utf8").trim();
-  // io.emit("telemetry", tele);
+  io.emit("telemetry", tele);
   console.log(tele);
 });

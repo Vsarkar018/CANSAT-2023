@@ -11,15 +11,25 @@ import Location from "./Components/DataComponent/Location";
 import Roll from "./Components/DataComponent/Roll";
 import Pitch from "./Components/DataComponent/Pitch";
 import Table from "./Components/DataComponent/Table";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 function App() {
-  const [variable, setVariable] = useState(0);
-  console.log(variable);
+  const [telemetry, setTelemetry] = useState("");
+  console.log(telemetry);
+  useEffect(() => {
+    socket.on("telemetry", telemetryData => {
+      setTelemetry(telemetryData);
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <div
       className="flex justify-center flex-col gap bg-black"
-      style={{ height: "100vh" }}
-    >
+      style={{ height: "100vh" }}>
       <div style={{ height: "65%" }} className="flex flex-col gap-1">
         <Row>
           <Overview />
