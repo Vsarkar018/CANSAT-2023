@@ -36,7 +36,7 @@ const Location = () => {
 
   return (
     <div style={{ height: "100%", width: "100%  " }}>
-      <LoadScript googleMapsApiKey="AIzaSyD83T02B8n15gB1qXXd7Z2PRQidudafiL0">
+      <LoadScript googleMapsApiKey">
         <GoogleMap
           mapContainerStyle={{
             width: "100%",
