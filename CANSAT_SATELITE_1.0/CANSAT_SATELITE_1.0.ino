@@ -7,7 +7,7 @@
 #include <SD.h>
 #include <SoftwareSerial.h>
 #include <TinyGPS++.h>
-
+#include <state_logic.h>
 SoftwareSerial gpsSerial(0, 1); // RX, TX pins for GPS module
 TinyGPSPlus gps;
 
@@ -115,6 +115,7 @@ void generateTelemetry()
   packetCount++;
   // altitudee = 343;
   altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+  findState(altitudee)
   // pressure = 342.34;
   pressure = bmp.pressure;
   // temperature = 34;
