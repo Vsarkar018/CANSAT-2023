@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import Row from "./Components/Row";
 import Team from "./Components/Team";
@@ -7,25 +7,12 @@ import Temperature from "./Components/DataComponent/Temperature";
 import Speed from "./Components/DataComponent/Speed";
 import Pressure from "./Components/DataComponent/Pressure";
 import Acceleration from "./Components/DataComponent/Acceleration";
-import Location from "./Components/DataComponent/Location";
+// import Location from "./Components/DataComponent/Location";
 import Roll from "./Components/DataComponent/Roll";
 import Pitch from "./Components/DataComponent/Pitch";
 import Table from "./Components/DataComponent/Table";
-import io from "socket.io-client";
-
-const socket = io("http://localhost:5000");
-function App() {
-  const [telemetry, setTelemetry] = useState("");
-  console.log(telemetry);
-  useEffect(() => {
-    socket.on("telemetry", telemetryData => {
-      setTelemetry(telemetryData);
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
+ 
+function App(){
   return (
     <div
       className="flex justify-center flex-col gap bg-black"
@@ -48,9 +35,7 @@ function App() {
         <div style={{ width: "60%", height: "100%" }} className="flex">
           <Table />
         </div>
-        <div style={{ width: "40%" }}>
-          <Location />
-        </div>
+        {/* <div style={{ width: "40%" }}>{<Location />}</div> */}
       </div>
     </div>
   );
