@@ -1,71 +1,47 @@
-import React, { useState } from "react";
-import { Line } from "react-chartjs-2";
-import { Chart as ChartJS } from "chart.js/auto";
-const Temperature = () => {
-  const generateDemoData = (count) => {
-    const data = [];
-    for (let i = 0; i < count; i++) {
-      const altitude = (Math.random() * 10).toFixed(2); // Random altitude data
-      const pressure = (Math.random() * 10).toFixed(2); // Random pressure data
-      data.push({ altitude, pressure });
-    }
-    return data;
-  };
-  let pressureFromTele = generateDemoData(20);
-  const [pressureData, setPressureData] = useState({
-    labels: pressureFromTele.map((tele) => tele.altitude),
-    datasets: [
-      {
-        labels: "Pressure",
-        data: pressureFromTele.map((tele) => tele.pressure),
-        fill: false,
-        borderWidth: 1, // Adjust the line width
-        pointRadius: 0,
-      },
-    ],
-  });
-  const options = {
-    scales: {
-      x: {
-        grid: {
-          color: "rgba(255, 255, 255, 0.3)", // Increase opacity for better visibility
-        },
-        ticks: {
-          font: {
-            size: 4, // Adjust the font size for x-axis labels
+import React, { useEffect, useRef } from "react";
+import Chart from "chart.js/auto";
+
+const TemperatureChart = ({ data }) => {
+  const chartRef = useRef();
+
+  useEffect(() => {
+    const ctx = chartRef.current.getContext("2d");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.map((_, index) => `Day ${index + 1}`),
+        datasets: [
+          {
+            label: "Temperature",
+            data: data,
+            borderColor: "rgba(75, 192, 192, 1)",
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            borderWidth: 1,
           },
-          stepSize: 1,
-        },
+        ],
       },
-      y: {
-        grid: {
-          color: "rgba(255, 255, 255, 0.3)", // Increase opacity for better visibility
-        },
-        ticks: {
-          font: {
-            size: 4, // Adjust the font size for x-axis labels
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Temperature (°C)",
+            },
           },
-          stepSize: 1,
+          x: {
+            title: {
+              display: true,
+              text: "Day",
+            },
+          },
         },
       },
-    },
-    plugins: {
-      legend: {
-        display: false, // Hide the legend
-      },
-    },
-    // maintainAspectRatio: false,
-    // backgroundColor: "black",
-  };
-  return (
-    <div
-      style={{ width: "100%", height: "100%" }}
-      className="p-0 m-0 flex items-center flex-col"
-    >
-      <Line data={pressureData} options={options} />
-      <p className="text-white font-thin text-lg">Temperature</p>
-    </div>
-  );
+    });
+  }, [data]);
+
+  return <canvas ref={chartRef} />;
 };
 
-export default Temperature;
+export default TemperatureChart;

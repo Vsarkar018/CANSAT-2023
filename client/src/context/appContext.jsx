@@ -6,7 +6,7 @@ const AppContext = React.createContext();
 const AppProvider = ({ children }) => {
 
   const [data, setData] = useState({
-    team_id: '2022ASI-043',
+    team_id: "2022ASI-043",
     time_stamping: 0,
     packet_count: 0,
     altitude: 0,
@@ -18,47 +18,48 @@ const AppProvider = ({ children }) => {
     gnss_lon: 0,
     gnss_alti: 0,
     gnss_sats: 0,
-    accel: 0,
-    gyro: 0,
+    accel_x: 0,
+    accel_y: 0,
+    accel_z: 0,
+    gyro_x: 0,
+    gyro_y: 0,
+    gyro_z: 0,
     state: "",
   });
 
-  useEffect(() => {
-    const generateRandomData = () => {
-      setData(prevData => ({
-        ...prevData,
-        time_stamping: Date.now(),
-        packet_count: prevData.packet_count + 1,
-        altitude:( Math.random() * 100).toFixed(6),
-        pressure: (Math.random() * 1000).toFixed(6),
-        temperature: (Math.random() * 50).toFixed(6),
-        voltage:( Math.random() * 5).toFixed(6),
-        gnss_time: Date.now(),
-        gnss_lat:( Math.random() * 90).toFixed(6),
-        gnss_lon: (Math.random() * 180).toFixed(6),
-        gnss_alti: (Math.random() * 100).toFixed(6),
-        gnss_sats: (Math.floor(Math.random() * 20)).toFixed(6),
-        accel: (Math.random() * 10).toFixed(6),
-        gyro: (Math.random() * 5).toFixed(6),
-        state: "OK",
-      }));
-    };
+  // useEffect(() => {
+  //   const generateRandomData = () => {
+  //     setData(prevData => ({
+  //       ...prevData,
+  //       time_stamping: Date.now(),
+  //       packet_count: prevData.packet_count + 1,
+  //       altitude:( Math.random() * 100).toFixed(6),
+  //       pressure: (Math.random() * 1000).toFixed(6),
+  //       temperature: (Math.random() * 50).toFixed(6),
+  //       voltage:( Math.random() * 5).toFixed(6),
+  //       gnss_time: Date.now(),
+  //       gnss_lat:( Math.random() * 90).toFixed(6),
+  //       gnss_lon: (Math.random() * 180).toFixed(6),
+  //       gnss_alti: (Math.random() * 100).toFixed(6),
+  //       gnss_sats: (Math.floor(Math.random() * 20)).toFixed(6),
+  //       accel: (Math.random() * 10).toFixed(6),
+  //       gyro: (Math.random() * 5).toFixed(6),
+  //       state: "OK",
+  //     }));
+  //   };
 
-    const intervalId = setInterval(generateRandomData, 1000);
+  //   const intervalId = setInterval(generateRandomData, 1000);
 
-    return () => clearInterval(intervalId);
-  }, []);
+  //   return () => clearInterval(intervalId);
+  // }, []);
 
 
 
   const [telemetry, setTelemetry] = useState("");
-
-  console.log(telemetry);
   useEffect(() => {
-    // socket.on("telemetry", telemetryData => {
-    //   setTelemetry(telemetryData);
-    // });
-    setTelemetry(data)
+    socket.on("telemetry", telemetryData => {
+      setTelemetry(JSON.parse(telemetryData));
+    });
   });
 
   return (
