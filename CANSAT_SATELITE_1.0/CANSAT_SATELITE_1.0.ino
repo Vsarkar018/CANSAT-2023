@@ -8,11 +8,12 @@
 #include <SoftwareSerial.h>
 #include <TinyGPS++.h>
 #include <Servo.h> 
+#include "state_logic.h"
  
 Servo paraServo;
 float thresholdAltitude = 251;
 int parachuteFlag = 0;
-// #include <state_logic.h>
+
 SoftwareSerial gpsSerial(0, 1); // RX, TX pins for GPS module
 TinyGPSPlus gps;
 
@@ -158,12 +159,12 @@ void generateTelemetry()
   gnssSats = getGnssSats();
   getAccelerometerData();
   getGyroSpinRate();
-
+  int state = findState(altitudee,accelerometerData.z);
   snprintf(telemetry, MAX_TELEMETRY_SIZE,
-           "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r\n",
+           "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\r\n",
            teamID, timeStamping, packetCount, altitudee, pressure,
            temperature, voltage, gnssTime, gnssLatitude, gnssLongitude,
-           gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y, accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z);
+           gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y, accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z,state);
 
 }
 
@@ -290,6 +291,10 @@ void displayFlag() {
   display.print(parachuteFlag);
 }
 
+
+void test(){
+
+}
 
 
 
