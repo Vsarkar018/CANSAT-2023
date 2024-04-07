@@ -7,7 +7,12 @@
 #include <SD.h>
 #include <SoftwareSerial.h>
 #include <TinyGPS++.h>
-#include <state_logic.h>
+#include <Servo.h> 
+ 
+Servo paraServo;
+float thresholdAltitude = 251;
+int parachuteFlag = 0;
+// #include <state_logic.h>
 SoftwareSerial gpsSerial(0, 1); // RX, TX pins for GPS module
 TinyGPSPlus gps;
 
@@ -15,7 +20,7 @@ File dataFile;
 
 // Xbeee
 XBee xbee = XBee();
-XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x41f4525e);
+XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x41f45000);
 ZBTxRequest zbTx;
 
 // BNO
@@ -67,24 +72,32 @@ struct accelerometer
 accelerometer accelerometerData;
 gyro gyroSpinRate;
 
+
+int  voltageRefPin = 40;
+float voltageRef = 0.0;
+
+
+//OLCD Display
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+#define OLED_RESET -1     // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C // I2C address of the OLED display
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire2, OLED_RESET);
+
 void setup()
 {
-
+  paraServo.attach(14);
+  paraServo.write(0);
   Serial2.begin(9600);
   gpsSerial.begin(9600);
   xbee.setSerial(Serial2);
+
+  //BNO 
   bno.begin();
-  // if (!bno.begin())
-  // {
-  //   /* There was a problem detecting the BNO055 ... check your connections */
-  //   Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-  //   while (1);
-  // }
-  // //BMP setup
-  // if (!bmp.begin_I2C(119,&Wire1)) {
-  //   Serial.println("Could not find a valid BMP3 sensor, check wiring!");
-  //   while (1);
-  // }
+
+  //BMP setup
   bmp.begin_I2C(119, &Wire);
   bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
   bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
@@ -92,6 +105,14 @@ void setup()
   bmp.setOutputDataRate(BMP3_ODR_50_HZ);
 
   SD.begin(BUILTIN_SDCARD);
+
+  pinMode(voltageRefPin,INPUT);
+
+  //OLCD Display
+  display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
+  display.clearDisplay();
+  display.display();
+
 
   delay(1000);
 }
@@ -104,21 +125,30 @@ void loop()
     Serial.println("Transmitting.....");
     timeStamping = currentMillis / 1000;
     generateTelemetry();
-      transmitTelemetry();
+    transmitTelemetry();
+    writeDatainSD();
     previousMillis = currentMillis;
   }
+
+  gps.encode(gpsSerial.read());
+
+  display.clearDisplay();
+  // displayVoltage();
+  // displayTeamName();
+  // displayStateAbbreviation();
+  displayFlag();
+  displayAltitude();
+  display.display();
+  opentParachute();
+
   Serial.println();
 }
 
 void generateTelemetry()
 {
   packetCount++;
-  // altitudee = 343;
   altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
-  findState(altitudee)
-  // pressure = 342.34;
   pressure = bmp.pressure;
-  // temperature = 34;
   temperature = bmp.temperature;
   voltage = getVoltage();
   gnssTime = getGnssTime();
@@ -134,39 +164,22 @@ void generateTelemetry()
            teamID, timeStamping, packetCount, altitudee, pressure,
            temperature, voltage, gnssTime, gnssLatitude, gnssLongitude,
            gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y, accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z);
-          Serial.print("Telemetry = ");
-          Serial.println(telemetry);
-          writeDatainSD();
-    
 
 }
 
 void transmitTelemetry()
 {
-      Serial.println(telemetry);
-  Serial.println("Send ");
-
   zbTx = ZBTxRequest(addr64, (uint8_t *)telemetry, strlen(telemetry));
   xbee.send(zbTx);
-  Serial.print("Telemetry = ");
-  Serial.println(telemetry);
 }
-
-
-
 
 
 void writeDatainSD(){
 
   dataFile = SD.open("telemetry.csv", FILE_WRITE);
-
-  // Check if the file opened successfully
   if (dataFile)
   {
-    // Append the telemetry data to the CSV file
     dataFile.println(telemetry);
-
-    // Close the file
     dataFile.close();
   }
   else
@@ -178,30 +191,31 @@ void writeDatainSD(){
 
 float getVoltage()
 {
-  return 3.00;
+  voltageRef = analogRead(voltageRefPin);
+ return (voltageRef*113)/1000;
 }
-unsigned int getGnssTime()
+unsigned int  getGnssTime()
 {
-  return 343;
+ return gps.time.second(); 
 }
 
 float getGnssLongitude()
 {
-  return 23424.0;
+  return gps.location.lng();
 }
 
 float getGnssLatitude()
 {
-  return 343.343;
+ return gps.location.lat();
 }
 float getGnssAltitude()
 {
-  return 34343.00;
+  return gps.altitude.meters();
 }
 
 int getGnssSats()
 {
-  return 3;
+  return gps.satellites.value();
 }
 void getAccelerometerData()
 {
@@ -220,3 +234,63 @@ void getGyroSpinRate()
   gyroSpinRate.y = gyroEvent.gyro.y;
   gyroSpinRate.z = gyroEvent.gyro.z;
 }
+
+
+void displayVoltage() {
+  display.setTextSize(3);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(15, 10);
+  display.print(voltage);
+  display.print(F("V"));
+}
+
+void displayTeamName() {
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.print(F("DEBRIS"));
+}
+
+void displayStateAbbreviation() {
+  String stateAbbreviation = "THE STATE";
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(55, 0);
+  display.print(stateAbbreviation);
+}
+
+
+void opentParachute(){
+  if (altitudee > thresholdAltitude && altitudee < 1500){
+    parachuteFlag = 1 ;
+  }
+  if (parachuteFlag && altitudee < thresholdAltitude){
+    paraServo.write(180);
+    paraServo.write(0);
+    paraServo.write(180);
+    Serial.println("Parachut Open");
+  }
+
+}
+
+void displayAltitude() {
+  display.setTextSize(3);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(15, 10);
+  display.print(altitudee);
+  // display.print(F("V"));
+}
+
+
+void displayFlag() {
+  // String stateAbbreviation = "THE STATE";
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(55, 0);
+  display.print(parachuteFlag);
+}
+
+
+
+
+

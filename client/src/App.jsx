@@ -7,12 +7,12 @@ import Temperature from "./Components/DataComponent/Temperature";
 import Speed from "./Components/DataComponent/Speed";
 import Pressure from "./Components/DataComponent/Pressure";
 import Acceleration from "./Components/DataComponent/Acceleration";
-// import Location from "./Components/DataComponent/Location";
+import Location from "./Components/DataComponent/Location";
 import Roll from "./Components/DataComponent/Roll";
 import Pitch from "./Components/DataComponent/Pitch";
 import Table from "./Components/DataComponent/Table";
- 
-function App(){
+
+function App() {
   return (
     <div
       className="flex justify-center flex-col gap bg-black"
@@ -35,7 +35,9 @@ function App(){
         <div style={{ width: "60%", height: "100%" }} className="flex">
           <Table />
         </div>
-        {/* <div style={{ width: "40%" }}>{<Location />}</div> */}
+        <div style={{ width: "40%" }}>
+          {/* <Location /> */}
+        </div>
       </div>
     </div>
   );
