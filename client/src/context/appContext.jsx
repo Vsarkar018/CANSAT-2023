@@ -26,7 +26,7 @@ const AppProvider = ({ children }) => {
     gyro_z: 0,
     state: "",
   });
-
+  const [coordinate, setCoordinate] = useState({ lat: 28.6129, lng: 77.2295 });
   // useEffect(() => {
   //   const generateRandomData = () => {
   //     setData(prevData => ({
@@ -59,13 +59,15 @@ const AppProvider = ({ children }) => {
   useEffect(() => {
     socket.on("telemetry", telemetryData => {
       setTelemetry(JSON.parse(telemetryData));
+      setCoordinate({ lat: telemetry.gnss_lat, lng: telemetry.gnss_lon });
     });
   });
 
   return (
     <AppContext.Provider
       value={{
-        telemetry
+        telemetry,
+        coordinate
       }}>
       {children}
     </AppContext.Provider>
