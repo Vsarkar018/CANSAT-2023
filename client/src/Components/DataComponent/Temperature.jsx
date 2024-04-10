@@ -1,13 +1,17 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 
 const TemperatureChart = ({ data }) => {
   const chartRef = useRef();
+  const [chartInstance, setChartInstance] = useState(null);
 
   useEffect(() => {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
     const ctx = chartRef.current.getContext("2d");
 
-    new Chart(ctx, {
+    const newChartInstance  = new Chart(ctx, {
       type: "line",
       data: {
         labels: data.map((_, index) => `Day ${index + 1}`),
@@ -39,6 +43,10 @@ const TemperatureChart = ({ data }) => {
         },
       },
     });
+    setChartInstance(newChartInstance);
+    return () => {
+      newChartInstance.destroy();
+    };
   }, [data]);
 
   return <canvas ref={chartRef} />;

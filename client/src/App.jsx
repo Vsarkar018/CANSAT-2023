@@ -13,6 +13,16 @@ import Pitch from "./Components/DataComponent/Pitch";
 import Table from "./Components/DataComponent/Table";
 
 function App() {
+  const [temperatureData, setTemperatureData] = useState([]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTemperatureData(currentData => {
+        const newTemperature = Math.random() * 100;
+        return [...currentData, newTemperature].slice(-10);
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div
       className="flex justify-center flex-col gap bg-black"
@@ -20,7 +30,7 @@ function App() {
       <div style={{ height: "65%" }} className="flex flex-col gap-1">
         <Row>
           <Overview />
-          <Temperature />
+          <Temperature data={temperatureData}/>
           <Pressure />
           <Team />
         </Row>
