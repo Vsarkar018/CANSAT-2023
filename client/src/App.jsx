@@ -24,32 +24,28 @@ function App() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div
-      className="flex justify-center flex-col gap bg-black"
-      style={{ height: "100vh" }}>
-      <div style={{ height: "65%" }} className="flex flex-col gap-1">
-        <Row>
-          <Overview />
-          <Temperature data={temperatureData}/>
-          <Pressure />
-          <Team />
-        </Row>
-        <Row>
-          <Acceleration />
-          <Speed />
-          <Roll />
-          <Pitch />
-        </Row>
+    <div class="dashboard-container">
+      <div className="app-container">
+        <div className="overview-container">
+          <Row>
+            <Overview className="component" />
+            <Team className="component" />
+            </Row> <Row>
+            <Pressure className="component" />
+            <Temperature className="component" data={temperatureData} />
+            <Acceleration className="component" />
+            </Row> <Row>
+            <Speed className="component" />
+            <Roll className="component" />
+            <Pitch className="component" />
+          </Row>
+        </div>
       </div>
-      <div style={{ height: "35%" }} className="flex">
-        <div style={{ width: "60%", height: "100%" }} className="flex">
-          <Table />
-        </div>
-        <div style={{ width: "40%" }}>
-          {/* <Location /> */}
-        </div>
+      <div class="telemetry-container">
+        <Table />
       </div>
     </div>
+    
   );
 }
 

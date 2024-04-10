@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useGlobalContext } from "../../context/appContext";
 const telemetryParameters = [
-  "team_id",
-  "time_stamping",
-  "packet_count",
-  "altitude",
-  "pressure",
-  "temperature",
-  "voltage",
-  "gnss_time",
-  "gnss_lat",
-  "gnss_lon",
-  "gnss_alti",
-  "gnss_sats",
-  "accel",
-  "gyro",
-  "state",
+  "TEAM_ID",
+  "TIME_STAMP",
+  "PACKET_COUNT",
+  "ALTITUDE",
+  "PRESSURE",
+  "TEMP",
+  "VOLTAGE",
+  "GNSS_TIME",
+  "GNSS_LAT",
+  "GNSS_LONG",
+  "GNSS_ALT",
+  "GNSS_SATS",
+  "ACCEL",
+  "GYRO",
+  "STATE",
 ];
 const Table = () => {
   const text = "TELEMETRY";
@@ -34,7 +34,7 @@ const Table = () => {
     <>
       <div
         className="flex flex-col text-white w-4 bg-blue-700"
-        style={{ fontSize: "20px", width: "2%" }}>
+        style={{ background: "#141414", fontSize: "20px", width: "2%" }}>
         {[...text].map((char, index) => (
           <span key={index} style={{ rotate: "90" }}>
             {char}
@@ -42,7 +42,7 @@ const Table = () => {
         ))}
       </div>
       <div
-        style={{ fontSize: "15px", width: "100%", marginTop: "10 px" }}
+        style={{ background: "#141414", fontSize: "15px", width: "100%", height: "100%", marginTop: "10 px" }}
         className="text-cyan-50 flex">
         <table
           border="1"

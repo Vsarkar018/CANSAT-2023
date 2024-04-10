@@ -12,7 +12,7 @@ const Acceleration = () => {
     labels: Array.from({ length: 20 }, (_, i) => `Sample ${i + 1}`),
     datasets: [
       {
-        label: "Acceleration (m/s²)",
+        label: "Acceleration",
         data: Array.from({ length: 20 }, () => +(Math.random() * 10).toFixed(2)),
         fill: false,
         borderColor: 'rgb(75, 192, 192)',
@@ -26,15 +26,36 @@ const Acceleration = () => {
     scales: {
       y: {
         beginAtZero: true,
-        title: {
-          display: true,
-          text: "Acceleration (m/s²)",
+        grid: {
+          color: "#282828", 
+        },
+        ticks: {
+          color: "#ffffff", 
+        },
+      },
+      x: {
+        grid: {
+          color: "#282828", 
+        },
+        ticks: {
+          color: "#ffffff", 
         },
       },
     },
     plugins: {
       legend: {
-        display: true,
+        labels: {
+          color: "#ffffff", 
+        },
+      },
+    },
+    elements: {
+      line: {
+        borderColor: "#320064", 
+        borderWidth: 2,
+      },
+      point: {
+        backgroundColor: "#230046", 
       },
     },
   };
@@ -55,15 +76,22 @@ const Acceleration = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // return (
+  //   <div style={{ width: "100%", height: "100%" }} className="p-0 m-0 flex items-center flex-col">
+  //     <Line data={chartData} options={options} />
+  //     <p className="text-white font-thin text-lg">Acceleration</p>
+  //   </div>
+  // );
   return (
-    <div style={{ width: "100%", height: "100%" }} className="p-0 m-0 flex items-center flex-col">
+    <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px" }}>
       <Line data={chartData} options={options} />
-      <p className="text-white font-thin text-lg">Acceleration</p>
+      <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Acceleration (m/s²)</p>
     </div>
   );
 };
 
 export default Acceleration;
+
 // const Acceleration = () => {
 //   const generateDemoData = (count) => {
 //     const data = [];

@@ -55,47 +55,46 @@ import { Chart as ChartJS } from "chart.js/auto";
   
       return () => clearInterval(interval); // Cleanup the interval on component unmount
     }, [speedData]);
-  const options = {
-    scales: {
-      x: {
-        grid: {
-          color: "rgba(255, 255, 255, 0.3)", // Increase opacity for better visibility
-        },
-        ticks: {
-          font: {
-            size: 4, // Adjust the font size for x-axis labels
+    const options = {
+      scales: {
+        x: {
+          grid: {
+            color: "#282828", // Use a color from your palette
           },
-          stepSize: 1,
-        },
-      },
-      y: {
-        grid: {
-          color: "rgba(255, 255, 255, 0.3)", // Increase opacity for better visibility
-        },
-        ticks: {
-          font: {
-            size: 4, // Adjust the font size for x-axis labels
+          ticks: {
+            color: "#ffffff", // Use a white color for better readability on a dark background
           },
-          stepSize: 1,
+        },
+        y: {
+          grid: {
+            color: "#282828", // Use a color from your palette
+          },
+          ticks: {
+            color: "#ffffff", // Use a white color for better readability on a dark background
+          },
         },
       },
-    },
-    plugins: {
-      legend: {
-        display: false, // Hide the legend
+      plugins: {
+        legend: {
+          labels: {
+            color: "#ffffff", // Use a white color for better readability on a dark background
+          },
+        },
       },
-    },
-    // maintainAspectRatio: false,
-    // backgroundColor: "black",
-  };
+      elements: {
+        point: {
+          radius: 0, // Hide points on the line
+        },
+      },
+    };
+  
   return (
-    <div
-      style={{ width: "100%", height: "100%" }}
-      className="p-0 m-0  flex items-center flex-col"
-    >
+    <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px"}}>
+    {/* <div style={{ background: "#141414", padding: "1rem", borderRadius: "8px" }}> */}
       <Line data={speedData} options={options} />
-      <p className="text-white font-thin text-lg">Speed</p>
+      <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Speed (m/s)</p>
     </div>
+      
   );
 };
 

@@ -61,42 +61,44 @@ const Pressure = () => {
     scales: {
       x: {
         grid: {
-          color: "rgba(255, 255, 255, 0.3)", // Increase opacity for better visibility
+          color: "#282828",
         },
         ticks: {
+          color: "#ffffff",
           font: {
-            size: 4, // Adjust the font size for x-axis labels
+            size: 10,
           },
-          stepSize: 1,
         },
       },
       y: {
+        beginAtZero: true,
         grid: {
-          color: "rgba(255, 255, 255, 0.3)", // Increase opacity for better visibility
+          color: "#282828", 
         },
         ticks: {
+          color: "#ffffff", 
           font: {
-            size: 4, // Adjust the font size for x-axis labels
+            size: 10,
           },
-          stepSize: 1,
         },
       },
     },
     plugins: {
       legend: {
-        display: false, // Hide the legend
+        labels: {
+          color: "#ffffff",
+          font: {
+            size: 10,
+          },
+        },
       },
     },
-    // maintainAspectRatio: false,
-    // backgroundColor: "black",
   };
+
   return (
-    <div
-      style={{ width: "100%", height: "100%" }}
-      className="p-0 m-0 flex items-center flex-col"
-    >
+    <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px" }}>
       <Line data={pressureData} options={options} />
-      <p className="text-white font-thin text-lg">Pressure</p>
+      <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Pressure (Pa)</p>
     </div>
   );
 };
