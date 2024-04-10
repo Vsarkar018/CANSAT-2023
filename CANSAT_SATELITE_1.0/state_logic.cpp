@@ -1,99 +1,120 @@
 #include "state_logic.h"
 #include <Arduino.h>
 
-// Define state enum
-enum SatelliteState {
-  BOOT,
-  SYSTEM_TEST,
-  READY_FOR_LAUNCH,
-  ASCENT,
-  APOGEE_REACHED,
-  DESCENT,
-  DESCENT_GYRO_INITIALIZE,
-  DESCENT_PARACHUTE_1_OPEN,
-  DESCENT_PARACHUTE_2_OPEN,
-  DESCENT_BUZZER,
-  IMPACT
+void findState(float altitude )
+{
+  
+  
+}
+
+// #include <EEPROM.h>
+// #include <Servo.h>
+// #include <SD.h>
+// // Include other libraries needed for sensors, gyro control, etc.
+
+// Define states for the CANSAT mission
+enum CansatState {
+  STATE_INIT,
+  STATE_FSW_RECOVERY,
+  STATE_READ_SENSORS,
+  STATE_DEPLOY_PARACHUTE_1,
+  STATE_GYRO_CONTROL,
+  STATE_DEPLOY_PARACHUTE_2,
+  STATE_LANDING_SEQUENCE,
+  STATE_LANDED
 };
 
-// Define global variables to track state
-SatelliteState currentState = BOOT;
-bool gyroInitialized = false;
-bool parachute1Opened = false;
-bool parachute2Opened = false;
+CansatState currentState;
+Servo parachuteServo;  // Assuming servo is used for parachute deployment
+const int parachuteServoPin = 9; // Example servo pin
+const int buzzerPin = 8;        // Buzzer pin
 
-// Threshold altitude for parachute 2 opening
-float parachute2Threshold = 580.0; // Adjust as needed
-float prev_altitudee = 0;
-float prev_accel = 0 ;
-int impactFlag = 0;
-int apogee = 253.0;
-int apogee_flag = 1;
-// Function to update state based on altitude
-SatelliteState updateState(float altitudee,float acceleration) {
-  float altitudee_diff = altitudee - prev_altitudee ;
-  if (altitudee_diff > 0 ){
-    currentState = ASCENT;
-  }else if (altitudee_diff < 0 ){
-    impactFlag = 1;
-    currentState = DESCENT;
-    
-  }else if ((abs(altitudee_diff) >= 0 && abs(altitudee_diff) <= 0.5)){
-    currentState = READY_FOR_LAUNCH;
+// void setup() {
+//   Serial.begin(9600);
+//   EEPROM.begin();
+//   SD.begin(BUILTIN_SDCARD);
 
-    if (impactFlag == 1){
-      currentState = IMPACT;
-    }
-  }
-  float acceleration_diff = acceleration - prev_accel;
-  if (altitudee >= apogee && abs(acceleration_diff) >= 0 && abs(acceleration_diff) < 0.5){
-    currentState = APOGEE_REACHED;
-  }
+//   // Initialize servo
+//   parachuteServo.attach(parachuteServoPin);
 
-  prev_altitudee = altitudee;
-  prev_accel = acceleration;
-  return currentState;
-}
-const char* stateToString(SatelliteState state) {
-  switch(state) {
-    case BOOT: return "BOOT";
-    case SYSTEM_TEST: return "SYSTEM TEST";
-    case READY_FOR_LAUNCH: return "READY FOR LAUNCH";
-    case ASCENT: return "ASCENT";
-    case APOGEE_REACHED: return "APOGEE REACHED";
-    case DESCENT: return "DESCENT";
-    case DESCENT_GYRO_INITIALIZE: return "DESCENT - GYRO INITIALIZE";
-    case DESCENT_PARACHUTE_1_OPEN: return "DESCENT - PARACHUTE 1 OPEN";
-    case DESCENT_PARACHUTE_2_OPEN: return "DESCENT - PARACHUTE 2 OPEN";
-    case DESCENT_BUZZER: return "DESCENT - BUZZER";
-    case IMPACT: return "IMPACT";
-    default: return "UNKNOWN";
-  }
-}
+//   // Read the last known state from EEPROM or set to STATE_INIT
+//   int savedState;
+//   EEPROM.get(0, savedState);
+//   if (savedState >= STATE_INIT && savedState <= STATE_LANDED) {
+//     currentState = (CansatState)savedState;
+//   } else {
+//     currentState = STATE_INIT;
+//   }
 
-int stateToInteger(SatelliteState state) {
-  switch(state) {
-    case BOOT: return 0;
-    case SYSTEM_TEST: return 1;
-    case READY_FOR_LAUNCH: return 2;
-    case ASCENT: return 3;
-    case APOGEE_REACHED: return 4;
-    case DESCENT: return 5 ;
-    case DESCENT_GYRO_INITIALIZE: return 6;
-    case DESCENT_PARACHUTE_1_OPEN: return 7;
-    case DESCENT_PARACHUTE_2_OPEN: return 8;
-    case DESCENT_BUZZER: return 9;
-    case IMPACT: return 10;
-    default: return 11;
-  }
-}
-
-// const char* findState(float altitudee) {
-//   currentState = updateState(altitudee);
-//   return stateToString(currentState);
+//   // Additional setup for sensors, SD card, etc.
 // }
 
-int findState(float altitudee, float acceleration) {
-  currentState = updateState(altitudee,acceleration);
-  return stateToInteger(currentState);
+void loop() {
+  switch (currentState) {
+    case STATE_INIT:
+      // Initial setup, check system health, etc.
+      transitionState(STATE_FSW_RECOVERY);
+      break;
+    case STATE_FSW_RECOVERY:
+      // FSW Recovery process
+      transitionState(STATE_READ_SENSORS);
+      break;
+    case STATE_READ_SENSORS:
+      // Read from sensors, save data, transmit telemetry
+      // Check altitude and transition states accordingly
+      if (altitudeReached(900)) {
+        transitionState(STATE_DEPLOY_PARACHUTE_1);
+      }
+      break;
+    case STATE_DEPLOY_PARACHUTE_1:
+      // Deploy first parachute
+      deployParachute();
+      // Start video capture
+      transitionState(STATE_GYRO_CONTROL);
+      break;
+    case STATE_GYRO_CONTROL:
+      // Activate gyro control for stabilization
+      if (altitudeReached(500)) {
+        transitionState(STATE_DEPLOY_PARACHUTE_2);
+      }
+      break;
+    case STATE_DEPLOY_PARACHUTE_2:
+      // Deploy second parachute
+      deployParachute();
+      if (altitudeReached(20)) {
+        transitionState(STATE_LANDING_SEQUENCE);
+      }
+      break;
+    case STATE_LANDING_SEQUENCE:
+      // Turn on beacon, prepare for landing
+      digitalWrite(buzzerPin, HIGH); // Assuming buzzer for simplicity
+      transitionState(STATE_LANDED);
+      break;
+    case STATE_LANDED:
+      // CANSAT has landed, stop all operations or enter sleep mode
+      digitalWrite(buzzerPin, LOW);
+      // Perform any final operations before going to sleep or ending mission
+      break;
+  }
+
+  // Delay to prevent too frequent processing
+  delay(1000);
 }
+
+void transitionState(CansatState newState) {
+  currentState = newState;
+  EEPROM.put(0, (int)newState); // Save new state to EEPROM for recovery
+}
+
+bool altitudeReached(int targetAltitude) {
+  // Implement altitude check logic here
+  // return true if the current altitude >= targetAltitude
+  return false; // Placeholder return value
+}
+
+void deployParachute() {
+  // Implement parachute deployment logic here
+  // For example, rotate servo to release parachute mechanism
+}
+
+// Add other functions as needed for sensor reading, gyro control, video capture, etc.

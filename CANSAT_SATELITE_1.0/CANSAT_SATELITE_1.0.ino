@@ -5,17 +5,26 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <SD.h>
+#include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
-#include <TinyGPS++.h>
 #include <Servo.h> 
 #include "state_logic.h"
  
-Servo paraServo;
+Servo paraServo, esc;
 float thresholdAltitude = 251;
 int parachuteFlag = 0;
-
-SoftwareSerial gpsSerial(0, 1); // RX, TX pins for GPS module
+const long interval = 500;
+unsigned long previousMillis = 0;
+unsigned long currentMillis = 0;
+int  voltageRefPin = 40;
+float voltageRef = 0.0;
+int altitudeeFlag = 1 ;
+float altitudeeOffset = 0 ;
+float prev_altitude = 0;
+float alti_diff = 0; 
 TinyGPSPlus gps;
+SoftwareSerial ss(0, 1); // RX, TX pins for GPS module
+
 
 File dataFile;
 
@@ -33,9 +42,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire1);
 #define SEALEVELPRESSURE_HPA (1013.25)
 Adafruit_BMP3XX bmp;
 
-const long interval = 500;
-unsigned long previousMillis = 0;
-unsigned long currentMillis = 0;
+
 
 // Telemetry
 #define MAX_TELEMETRY_SIZE 128
@@ -56,6 +63,7 @@ float gnssLongitude = 0;
 float gnssAltitude = 0;
 int gnssSats = 0;
 
+
 struct gyro
 {
   float x = 0.0;
@@ -74,9 +82,6 @@ accelerometer accelerometerData;
 gyro gyroSpinRate;
 
 
-int  voltageRefPin = 40;
-float voltageRef = 0.0;
-
 
 //OLCD Display
 #include <Adafruit_GFX.h>
@@ -86,13 +91,43 @@ float voltageRef = 0.0;
 #define OLED_RESET -1     // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C // I2C address of the OLED display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire2, OLED_RESET);
+int state ;
+
+
 
 void setup()
 {
+
+
+// BLDC SETUP
+  // esc.attach(33,  1000, 2000); 
+  // delay(2000);
+  // esc.write(0);
+  // delay(2000);
+  // esc.write(20);
+  // delay(2000);
+  // esc.write(40);
+  // delay(2000);
+  //  esc.write(60);
+  // delay(2000);
+  // esc.write(80);
+  // delay(2000);
+  // esc.write(100);
+  // delay(2000);
+  //  esc.write(120);
+  // delay(2000);
+  // esc.write(140);
+  // delay(2000);
+  // esc.write(160);
+  // delay(2000);
+  // esc.write(180);
+
+
+
   paraServo.attach(14);
   paraServo.write(0);
   Serial2.begin(9600);
-  gpsSerial.begin(9600);
+  ss.begin(9600);
   xbee.setSerial(Serial2);
 
   //BNO 
@@ -123,49 +158,58 @@ void loop()
   currentMillis = millis();
   if (currentMillis - previousMillis >= interval)
   {
-    Serial.println("Transmitting.....");
+    // Serial.println("Transmitting.....");
     timeStamping = currentMillis / 1000;
     generateTelemetry();
     transmitTelemetry();
     writeDatainSD();
     previousMillis = currentMillis;
   }
-
-  gps.encode(gpsSerial.read());
-
   display.clearDisplay();
-  // displayVoltage();
-  // displayTeamName();
-  // displayStateAbbreviation();
-  displayFlag();
-  displayAltitude();
-  display.display();
-  opentParachute();
-
-  Serial.println();
+//  // // displayVoltage();
+//  // // displayTeamName();
+//  // // displayStateAbbreviation();
+   displayFlag();
+   displayAltitude();
+   display.display();
+//  // opentParachute();
+//  esc.write(100);
+//Serial.println(gnssLongitude);
+//Serial.println(gnssLatitude);
 }
 
 void generateTelemetry()
 {
   packetCount++;
-  altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+  altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA) - altitudeeOffset ;
+  
+  // if (altitudee > 0 && altitudeeFlag && altitudee < 1500){
+  //   altitudeeOffset = altitudee;
+  //   altitudeeFlag = 0; 
+  // }
+  // prev_alti = altitudee;
+
   pressure = bmp.pressure;
   temperature = bmp.temperature;
   voltage = getVoltage();
-  gnssTime = getGnssTime();
-  gnssLongitude = getGnssLongitude();
-  gnssLatitude = getGnssLatitude();
-  gnssAltitude = getGnssAltitude();
-  gnssSats = getGnssSats();
+  gnssTime =gps.time.second(); 
+//  gnssLongitude = gps.location.lng();
+   lati(gps.location.lat(), gps.location.isValid(), 11, 6);
+   lngi(gps.location.lng(), gps.location.isValid(), 11, 6);
+  gnssAltitude = gps.altitude.meters();
+  gnssSats = gps.satellites.value();
   getAccelerometerData();
   getGyroSpinRate();
-  int state = findState(altitudee,accelerometerData.z);
+  float alit_diff = altitudee -  prev_altitude;
   snprintf(telemetry, MAX_TELEMETRY_SIZE,
            "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\r\n",
            teamID, timeStamping, packetCount, altitudee, pressure,
            temperature, voltage, gnssTime, gnssLatitude, gnssLongitude,
            gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y, accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z,state);
-
+            // snprintf(telemetry, MAX_TELEMETRY_SIZE,
+          //  "%.1f,%.1f,%d\r\n",
+          // altitudee,alit_diff,state);
+          
 }
 
 void transmitTelemetry()
@@ -195,29 +239,7 @@ float getVoltage()
   voltageRef = analogRead(voltageRefPin);
  return (voltageRef*113)/1000;
 }
-unsigned int  getGnssTime()
-{
- return gps.time.second(); 
-}
 
-float getGnssLongitude()
-{
-  return gps.location.lng();
-}
-
-float getGnssLatitude()
-{
- return gps.location.lat();
-}
-float getGnssAltitude()
-{
-  return gps.altitude.meters();
-}
-
-int getGnssSats()
-{
-  return gps.satellites.value();
-}
 void getAccelerometerData()
 {
   sensors_event_t accelerometerEvent;
@@ -269,33 +291,48 @@ void opentParachute(){
     paraServo.write(180);
     paraServo.write(0);
     paraServo.write(180);
-    Serial.println("Parachut Open");
   }
 
 }
 
 void displayAltitude() {
-  display.setTextSize(3);
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(15, 10);
-  display.print(altitudee);
-  // display.print(F("V"));
+  display.setCursor(0, 15);
+  display.print(gnssLongitude);
 }
 
 
-void displayFlag() {
-  // String stateAbbreviation = "THE STATE";
-  display.setTextSize(1);
+void displayFlag() {  // String stateAbbreviation = "THE STATE";
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(55, 0);
-  display.print(parachuteFlag);
+  display.setCursor(0, 0);
+  display.print(gnssLatitude);
 }
 
 
-void test(){
+static void lati(float val, bool valid, int len, int prec)
+{
+if (valid) 
+ {
+  gnssLatitude = val;
 
+  }
+  smartDelay(0);
 }
-
-
-
-
+static void lngi(float val, bool valid, int len, int prec)
+{
+if (valid) 
+ {
+  gnssLongitude = val;
+  }
+  smartDelay(0);
+}
+static void smartDelay(unsigned long ms) {
+  unsigned long start = millis();
+  do {
+    while (ss.available()) {
+      gps.encode(ss.read());
+    }
+  } while (millis() - start < ms);
+}
