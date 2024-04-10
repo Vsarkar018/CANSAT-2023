@@ -1,6 +1,6 @@
 #ifndef STATE_LOGIC
 #define STATE_LOGIC
 
-void findState(float data);
+int findState(float altitudee, float acceleration);
 
 #endif
