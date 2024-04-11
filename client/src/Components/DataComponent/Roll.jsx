@@ -52,8 +52,8 @@ const Roll = () => {
         }
       },
       y: {
-        min: -360,
-        max: 360,
+        min: -180,
+        max: 180,
         grid: {
           color: "#282828" // Mid-gray for grid lines
         },
@@ -77,9 +77,8 @@ const Roll = () => {
   };
 
   return (
-    <div style={{ background: "#141414", position: "relative", height: "100%", width: "100%", paddingLeft: "20px", paddingRight: "20px", paddingTop: "20px", paddingBottom: "0px"}}>
+    <div style={{ background: "#141414", position: "relative", height: "100%", width: "100%", paddingLeft: "10px", padding: "20px" }}>
       <Line data={data} options={options} />
-      {/* <p style={{ color: "#ffffff", textAlign: "center", marginTop: "0px" }}>Gyroscope</p> */}
     </div>
   );
 };

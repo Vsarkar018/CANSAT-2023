@@ -11,6 +11,7 @@ import Location from "./Components/DataComponent/Location";
 import Roll from "./Components/DataComponent/Roll";
 import Pitch from "./Components/DataComponent/Pitch";
 import Table from "./Components/DataComponent/Table";
+import Voltage from "./Components/DataComponent/Voltage";
 
 function App() {
   const [temperatureData, setTemperatureData] = useState([]);
@@ -25,24 +26,34 @@ function App() {
   }, []);
   return (
     <div class="dashboard-container">
-      <div className="app-container">
-        <div className="overview-container">
-          <Row>
-            <Overview className="component" />
-            <Team className="component" />
-            </Row> <Row>
-            <Pressure className="component" />
-            <Temperature className="component" data={temperatureData} />
-            <Acceleration className="component" />
-            </Row> <Row>
-            <Speed className="component" />
-            <Roll className="component" />
-            <Pitch className="component" />
-          </Row>
+      <div className="left-half">
+        <div className="components-container">
+          <div className="overview-container">
+            <Row>
+              <Team className="component" />
+              <Overview className="component" />
+              <Voltage className="component" />
+            </Row> 
+            <Row>
+              <Pressure className="component" />
+              <Temperature className="component" data={temperatureData} />
+              <Acceleration className="component" />
+            </Row> 
+            <Row>
+              <Speed className="component" />
+              <Roll className="component" />
+              <Pitch className="component" />
+            </Row>
+          </div>
         </div>
       </div>
-      <div class="telemetry-container">
-        <Table />
+      <div className="right-half">
+        <div className="telemetry-container">
+          <Table />
+        </div>
+        <div className="location-container">
+          <Location/>
+        </div>
       </div>
     </div>
     

@@ -1,74 +1,31 @@
-import React, { useEffect, useState } from "react";
-import { useGlobalContext } from "../../context/appContext";
-const telemetryParameters = [
-  "TEAM_ID",
-  "TIME_STAMP",
-  "PACKET_COUNT",
-  "ALTITUDE",
-  "PRESSURE",
-  "TEMP",
-  "VOLTAGE",
-  "GNSS_TIME",
-  "GNSS_LAT",
-  "GNSS_LONG",
-  "GNSS_ALT",
-  "GNSS_SATS",
-  "ACCEL",
-  "GYRO",
-  "STATE",
-];
-const Table = () => {
-  const text = "TELEMETRY";
-  const { telemetry } = useGlobalContext();
-  const [telemetryHistory, setTelemetryHistory] = useState([]);
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000'); // Replace with your server's address
+
+const TelemetryDisplay = () => {
+  const [telemetryData, setTelemetryData] = useState('');
 
   useEffect(() => {
-    // Update telemetry history when new telemetry is received
-    setTelemetryHistory(prevHistory => [
-      ...prevHistory.slice(-5), // Keep the last 5 entries
-      telemetry,
-    ]);
-  }, [telemetry]);
+    // Listen for telemetry data from the server
+    socket.on('telemetry', (data) => {
+      const parsedData = JSON.parse(data);
+      // Convert the telemetry object into a string for display
+      const formattedData = Object.entries(parsedData).map(([key, value]) => `${key}: ${value}`).join('\n');
+      setTelemetryData(formattedData);
+    });
+
+    // Clean up on component unmount
+    return () => {
+      socket.off('telemetry');
+    };
+  }, []);
 
   return (
-    <>
-      <div
-        className="flex flex-col text-white w-4 bg-blue-700"
-        style={{ background: "#141414", fontSize: "20px", width: "2%" }}>
-        {[...text].map((char, index) => (
-          <span key={index} style={{ rotate: "90" }}>
-            {char}
-          </span>
-        ))}
-      </div>
-      <div
-        style={{ background: "#141414", fontSize: "15px", width: "100%", height: "100%", marginTop: "10 px" }}
-        className="text-cyan-50 flex">
-        <table
-          border="1"
-          cellSpacing="50"
-          align="center"
-          className="telemetry-table">
-          <thead>
-            <tr>
-              {telemetryParameters.map((key, index) => {
-                return <th key={index}>{key}</th>;
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {telemetryHistory.map((entry, rowIndex) => (
-              <tr key={rowIndex}>
-                {telemetryParameters.map((param, colIndex) => (
-                  <td key={colIndex}>{entry[param]}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+    <div style={{ whiteSpace: 'pre-wrap', backgroundColor: '#141414', color: 'white', padding: '10px' }}>
+      {telemetryData}
+    </div>
   );
 };
 
-export default Table;
+export default TelemetryDisplay;

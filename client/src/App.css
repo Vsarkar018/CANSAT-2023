@@ -2,73 +2,102 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Use grid to split the main container into two equal columns */
 .dashboard-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr); /* Two equal columns */
   height: 100vh;
-  background-color: #141414; /* Dark background color for the entire dashboard */
-}
-
-/* Container for the telemetry table on the right half */
-.telemetry-container {
-  grid-column: 2 / 3;
+  margin: 0;
   background-color: #141414; /* Dark background color */
-  color: #FFFFFF; /* Text color */
-  overflow-y: auto; /* Scrollable if content overflows */
-  padding: 10px; /* Padding around the telemetry content */
-  display: flex; /* Use flexbox for internal layout */
-  flex-direction: column; /* Align child elements in a column */
-  max-height: 50vh;
+  overflow: auto;
 }
 
-/* Container for other components on the left half */
-.components-container {
-  grid-column: 1 / 2;
-  padding: 10px;
+.left-half {
   display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-rows: repeat(3, 1fr); /* Three equal rows */
+  grid-template-columns: repeat(3, 1fr); /* Three equal columns */
+  gap: 10px; /* Space between grid items */
+  row-gap: 10px;
 }
 
-/* Style for individual components */
-.component {
+.right-half {
+  display: grid;
+  grid-template-rows: repeat(2, 1fr); /* Two equal rows for telemetry and GPS */
+  padding: 10px; /* Padding inside the right half */
+}
+
+.left-half, .right-half {
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.component, .telemetry-container, .location-container {
   background-color: #282828; /* Slightly lighter dark background for components */
-  border: 1px solid #282828; /* Border color */
-  border-radius: 8px; /* Rounded corners */
+  color: #FFFFFF; /* Text color */
+  border: 1px solid #141414; /* Border color */
+  border-radius: 4px; /* Border radius for rounded corners */
+  padding: 10px; /* Padding inside components */
+  overflow: hidden; /* Prevents content from overflowing */
+}
+
+.telemetry-container, .location-container {
+  grid-column: 1 / 2; /* Stretches across the available columns */
+}
+
+/* Specific styling for components to center content */
+.component {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Styling for the telemetry table */
-.telemetry-table {
-  border-collapse: collapse;
-  width: 100%;
+.row{
+  display: flex;
+  align-items: flex-start;
+}
+
+.team-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   color: #FFFFFF;
+  padding: 20px;
 }
 
-.telemetry-table th,
-.telemetry-table td {
-  border: 1px solid #ffffff;
-  background-color: #141414;
-  padding: 8px; /* Adjust padding for cell spacing */
-  text-align: left; /* Align text to the left */
+.team-name {
+  background-color: #9553ff; /* Adjust background color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
 }
 
-/* Responsive design for smaller screens */
+.team-logo {
+  max-width: 100px; /* Adjust as needed for size */
+  height: auto;
+  border-radius: 50%; /* Rounded corners for circular shape */
+}
+
+
+
+/* Adjust the grid layout for responsive design */
 @media (max-width: 768px) {
   .dashboard-container {
-    grid-template-columns: 1fr; /* Stack components vertically on smaller screens */
+    grid-template-columns: 1fr; /* One column layout for smaller screens */
   }
   
-  .telemetry-container {
-    order: 1; /* Telemetry comes first */
-    width: 100%; /* Take full width on smaller screens */
+  .right-half {
+    grid-template-rows: 1fr; /* Stacks telemetry and GPS vertically */
   }
   
-  .components-container {
-    order: 2; /* Components come after telemetry */
+  .left-half, .right-half {
+    order: 1; /* Ensures the left side is on top on smaller screens */
   }
 }
+
