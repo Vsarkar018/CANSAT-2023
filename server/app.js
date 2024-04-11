@@ -7,40 +7,13 @@ const path = require("path");
 const csvFilePath = path.join(__dirname, "telemetry.csv");
 const csvHeader =
   "Team ID,Time stamping,Packet count,Altitude,Pressure,Temperature,Voltage,GNSS time,GNSS lat,GNSS lon,GNSS alti,GNSS sats,Accel,Gyro,state\n";
-// fs.writeFile(csvFilePath, csvHeader, function (err) {
-//   if (err) {
-//     console.error("Error writing to file:", err);
-//   } else {
-//     console.log("File written successfully.");
-//   }
-// });
-const telemetryParameters = [
-  "team_id",
-  "time_stamping",
-  "packet_count",
-  "altitude",
-  "pressure",
-  "temperature",
-  "voltage",
-  "gnss_time",
-  "gnss_lat",
-  "gnss_lon",
-  "gnss_alti",
-  "gnss_sats",
-  "accel_x",
-  "accel_y",
-  "accel_z",
-  "gyro_x",
-  "gyro_y",
-  "gyro_z",
-  "state",
-];
+if (!fs.existsSync(csvFilePath))fs.writeFile(csvFilePath, csvHeader, ()=>{})
 const telemetryObject = {};
 
 const { SerialPort, DelimiterParser } = require("serialport");
 const { XBeeAPI } = require("xbee-api");
 
-const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
+const serialPort = new SerialPort({ path: "COM15", baudRate: 9600 });
 
 const xbee = new XBeeAPI({ api_mode: 2 });
 
@@ -62,16 +35,8 @@ serialPort.on("open", () => {
 
 parser.on("data", telemetry => {
   const frame = xbee.parseFrame(telemetry);
-  let tele = frame.data.toString("utf8").trim();
-  // fs.writeFile(csvFilePath, tele);
-  tele = tele.split(",");
-
-
-  telemetryParameters.forEach((key, index) => {
-    telemetryObject[key] = tele[index];
-  });
-  const telemetryJSON = JSON.stringify(telemetryObject);
-  io.emit("telemetry", telemetryJSON);
-  // console.log(tele);
-  console.log(telemetryJSON);
+  let tele = frame.data.toString("utf8").trim().replace(/[^\x20-\x7E]/g, "").replace(/}/g,'');
+  fs.writeFile(csvFilePath, tele + '\n', { flag: 'a' }, () => {})
+  // io.emit("telemetry", telemetryJSON);
+  console.log(tele);
 });
