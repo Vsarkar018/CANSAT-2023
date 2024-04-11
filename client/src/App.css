@@ -4,20 +4,27 @@
 
 .dashboard-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two equal columns */
+  grid-template-columns: 60% 40%; /* Two equal columns */
   height: 100vh;
   margin: 0;
   background-color: #141414; /* Dark background color */
   overflow: auto;
 }
 
-.left-half {
-  display: grid;
-  grid-template-rows: repeat(3, 1fr); /* Three equal rows */
-  grid-template-columns: repeat(3, 1fr); /* Three equal columns */
-  gap: 10px; /* Space between grid items */
-  row-gap: 10px;
+
+
+.row {
+  display: flex;
+  flex-wrap: wrap; /* Allows child elements to wrap if needed */
+  align-items: stretch; /* Stretches children to fill the container */
+  height: 100%; /* Use available space */
 }
+
+.row > div {
+  flex: 1; /* Allows children to grow and fill the row evenly */
+  overflow: auto; /* Manages content overflow */
+}
+
 
 .right-half {
   display: grid;
@@ -36,7 +43,7 @@
   color: #FFFFFF; /* Text color */
   border: 1px solid #141414; /* Border color */
   border-radius: 4px; /* Border radius for rounded corners */
-  padding: 10px; /* Padding inside components */
+  /* padding: 10px; Padding inside components */
   overflow: hidden; /* Prevents content from overflowing */
 }
 
@@ -83,9 +90,6 @@
   height: auto;
   border-radius: 50%; /* Rounded corners for circular shape */
 }
-
-
-
 /* Adjust the grid layout for responsive design */
 @media (max-width: 768px) {
   .dashboard-container {

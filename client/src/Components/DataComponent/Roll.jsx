@@ -1,86 +1,95 @@
-// src/GyroscopicChart.js
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-const gyroscopicData = [
-  { x: 0, y: 10, z: -20 },
-  { x: 1, y: 20, z: -15 },
-  // ... more data points
-];
-const Roll = () => {
-  const data = {
-    labels: Array.from({ length: gyroscopicData.length }, (_, i) => i + 1),
-    datasets: [
-      {
-        label: "X Axis",
-        borderColor: "#320064", // Purple color from your palette
-        backgroundColor: "rgba(50, 0, 100, 0.5)", // Slightly transparent
-        data: gyroscopicData.map((dataPoint) => dataPoint.x),
-        fill: false,
-      },
-      {
-        label: "Y Axis",
-        borderColor: "#230046", // Darker purple
-        backgroundColor: "rgba(35, 0, 70, 0.5)",
-        data: gyroscopicData.map((dataPoint) => dataPoint.y),
-        fill: false,
-      },
-      {
-        label: "Z Axis",
-        borderColor: "#141414", // Almost black
-        backgroundColor: "rgba(20, 20, 20, 0.5)",
-        data: gyroscopicData.map((dataPoint) => dataPoint.z),
-        fill: false,
-      },
-    ],
+import { Chart as ChartJS } from "chart.js/auto";
+
+const OrientationChart = () => {
+  // Function to simulate orientation data for X, Y, Z axes
+  const generateDemoData = (count) => {
+    return Array.from({ length: count }, () => ({
+      x: +(Math.random() * 180 - 90).toFixed(2), // Simulating degrees from -90 to 90
+      y: +(Math.random() * 180 - 90).toFixed(2),
+      z: +(Math.random() * 180 - 90).toFixed(2),
+    }));
   };
 
+  const demoData = generateDemoData(20);
+
+  const [chartData, setChartData] = useState({
+    labels: Array.from({ length: 20 }, (_, i) => `S ${i + 1}`),
+    datasets: [
+      {
+        label: "X Orientation",
+        data: demoData.map(data => data.x),
+        fill: false,
+        borderColor: '#FF6384', // Red for X
+        tension: 0.1,
+        borderWidth: 1, // Decreased line width
+      },
+      {
+        label: "Y Orientation",
+        data: demoData.map(data => data.y),
+        fill: false,
+        borderColor: '#36A2EB', // Blue for Y
+        tension: 0.1,
+        borderWidth: 1, // Decreased line width
+      },
+      {
+        label: "Z Orientation",
+        data: demoData.map(data => data.z),
+        fill: false,
+        borderColor: '#FFCE56', // Yellow for Z
+        tension: 0.1,
+        borderWidth: 1, // Decreased line width
+      },
+    ],
+  });
+
   const options = {
-    responsive: true,
-    maintainAspectRatio: false,
     scales: {
+      y: {
+        suggestedMin: -90,
+        suggestedMax: 90,
+        grid: {
+          color: "#282828",
+        },
+        ticks: {
+          color: "#ffffff",
+          font: {
+            size: 10, // Decreased font size for Y-axis labels
+          },
+        },
+      },
       x: {
         grid: {
-          color: "#282828" // Mid-gray for grid lines
-        },
-        title: {
-          display: true,
-          color: '#FFFFFF'
+          color: "#282828",
         },
         ticks: {
-          color: '#FFFFFF' // White text color
-        }
-      },
-      y: {
-        min: -180,
-        max: 180,
-        grid: {
-          color: "#282828" // Mid-gray for grid lines
+          color: "#ffffff",
+          font: {
+            size: 10, // Decreased font size for X-axis labels
+          },
         },
-        title: {
-          display: true,
-          color: '#FFFFFF'
-        },
-        ticks: {
-          stepSize: 90,
-          color: '#FFFFFF' // White text color
-        }
       },
     },
     plugins: {
       legend: {
         labels: {
-          color: '#FFFFFF' // White text color for legends
-        }
-      }
-    }
+          color: "#ffffff",
+          font: {
+            size: 12, // Decreased font size for legend labels
+          },
+        },
+      },
+    },
+    // maintainAspectRatio: false, // This will allow the chart to use maximum container space  
   };
 
   return (
-    <div style={{ background: "#141414", position: "relative", height: "100%", width: "100%", paddingLeft: "10px", padding: "20px" }}>
-      <Line data={data} options={options} />
+    <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px" }}>
+      <Line data={chartData} options={options} />
+      {/* <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px", fontSize: "12px" }}>Orientation (Degrees)</p> */}
     </div>
   );
 };
 
-export default Roll;
+export default OrientationChart;

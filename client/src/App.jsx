@@ -15,11 +15,16 @@ import Voltage from "./Components/DataComponent/Voltage";
 
 function App() {
   const [temperatureData, setTemperatureData] = useState([]);
+  const [pressureData, setPressureData] = useState([]);
   useEffect(() => {
     const interval = setInterval(() => {
       setTemperatureData(currentData => {
         const newTemperature = Math.random() * 100;
         return [...currentData, newTemperature].slice(-10);
+      });
+      setPressureData(currentData => {
+        const newPressure = Math.random() * 1000;
+        return [...currentData, newPressure].slice(-10);
       });
     }, 1000);
     return () => clearInterval(interval);
@@ -29,32 +34,28 @@ function App() {
       <div className="left-half">
         <div className="components-container">
           <div className="overview-container">
-            <Row>
-              <Team className="component" />
+            <Row className="row"> 
               <Overview className="component" />
-              <Voltage className="component" />
+              <Temperature className="component" temperatureData={temperatureData} pressureData={pressureData} />
             </Row> 
-            <Row>
-              <Pressure className="component" />
-              <Temperature className="component" data={temperatureData} />
+            <Row className="row">
+            <Speed className="component" />
               <Acceleration className="component" />
             </Row> 
-            <Row>
-              <Speed className="component" />
+            <div
+            style={{ width: "60%" }}
+            className="border border-gray-400 p-2 h-full row">
               <Roll className="component" />
-              <Pitch className="component" />
-            </Row>
+            </div>
           </div>
         </div>
       </div>
-      <div className="right-half">
-        <div className="telemetry-container">
-          <Table />
-        </div>
-        <div className="location-container">
-          <Location/>
-        </div>
+      <div className="right-half" style={{height:"63vh"}}>
+      <Location/>
       </div>
+      <div>
+        <Table/>
+        </div>
     </div>
     
   );

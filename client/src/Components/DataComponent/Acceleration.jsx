@@ -9,7 +9,7 @@ const Acceleration = () => {
     });
   };
   const [chartData, setChartData] = useState({
-    labels: Array.from({ length: 20 }, (_, i) => `Sample ${i + 1}`),
+    labels: Array.from({ length: 20 }, (_, i) => `${i + 1}`),
     datasets: [
       {
         label: "Acceleration",
@@ -65,7 +65,7 @@ const Acceleration = () => {
     const interval = setInterval(() => {
       setChartData((prevData) => {
         const newData = [...prevData.datasets[0].data, +(Math.random() * 10).toFixed(2)].slice(-20);
-        const newLabels = Array.from({ length: 20 }, (_, i) => `Sample ${i + 1 + prevData.datasets[0].data.length}`).slice(-20); 
+        const newLabels = Array.from({ length: 20 }, (_, i) => `${i + 1 + prevData.datasets[0].data.length}`).slice(-20); 
         return {
           labels: newLabels,
           datasets: [{ ...prevData.datasets[0], data: newData }],
@@ -85,7 +85,7 @@ const Acceleration = () => {
   return (
     <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px" }}>
       <Line data={chartData} options={options} />
-      <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Acceleration (m/s²)</p>
+      {/* <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Acceleration (m/s²)</p> */}
     </div>
   );
 };

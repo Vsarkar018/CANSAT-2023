@@ -58,7 +58,7 @@ const AppProvider = ({ children }) => {
   const [telemetry, setTelemetry] = useState("");
   useEffect(() => {
     socket.on("telemetry", telemetryData => {
-      setTelemetry(JSON.parse(telemetryData));
+      setTelemetry(telemetryData);
     });
   });
 

@@ -36,10 +36,10 @@ const Overview = () => {
           <div className="bg-yellow-400 rounded-full w-3 h-3 mr-2"></div>
           PRELAUNCH
         </div>
-      <div className="mt-4">
+      <div className="mt-2">
         <div>Mission Time: 0 seconds</div>
         <div>Packet Count: 0</div>
-        <div>GNSS Time: 00:00:00</div>
+        {/* <div>GNSS Time: 00:00:00</div> */}
       </div>
       </div>
     </div>

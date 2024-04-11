@@ -92,7 +92,7 @@ import { Chart as ChartJS } from "chart.js/auto";
     <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px"}}>
     {/* <div style={{ background: "#141414", padding: "1rem", borderRadius: "8px" }}> */}
       <Line data={speedData} options={options} />
-      <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Speed (m/s)</p>
+      {/* <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Speed (m/s)</p> */}
     </div>
       
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 
-const TemperatureChart = ({ data }) => {
+const TemperatureAndPressureChart = ({temperatureData,pressureData}) => {
   const chartRef = useRef();
   const [chartInstance, setChartInstance] = useState(null);
 
@@ -9,71 +9,78 @@ const TemperatureChart = ({ data }) => {
     if (chartInstance) {
       chartInstance.destroy();
     }
-  const ctx = chartRef.current.getContext("2d");
+    const ctx = chartRef.current.getContext("2d");
 
-  const newChartInstance  = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: data.map((_, index) => `Day ${index + 1}`),
-      datasets: [
-        {
-          label: "Temperature",
-          data: data,
-          fill: false,
-          borderColor: "#DF00FE", // Using the dark purple from the palette
-          tension: 0.1,
+    const newChartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: temperatureData.map((_, index) => `D ${index + 1}`),
+        datasets: [
+          {
+            label: "Temperature",
+            data: temperatureData,
+            fill: false,
+            borderColor: 'rgb(255, 99, 132)', 
+            tension: 0.1,
+          },
+          {
+            label: "Pressure",
+            data: pressureData,
+            fill: false,
+            borderColor:'rgb(75, 192, 192)',
+            tension: 0.1,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "#282828", 
+            },
+            ticks: {
+              color: "#ffffff", 
+            },
+          },
+          x: {
+            grid: {
+              color: "#282828", 
+            },
+            ticks: {
+              color: "#ffffff", 
+            },
+          },
         },
-      ],
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: "#282828" // Dark gridlines
+        plugins: {
+          legend: {
+            labels: {
+              color: "#FFFFFF", // White text for readability
+            },
           },
-          title: {
-            display: true,
-            color: "#FFFFFF" // White text for readability
-          },
-          ticks: {
-            color: "#FFFFFF" // White ticks for readability
-          }
         },
-        x: {
-          grid: {
-            color: "#282828" // Dark gridlines
+        elements: {
+          line: {
+            borderColor: "#320064", 
+            borderWidth: 2,
           },
-          title: {
-            display: true,
-
-            color: "#FFFFFF" // White text for readability
+          point: {
+            backgroundColor: "#230046", 
           },
-          ticks: {
-            color: "#FFFFFF" // White ticks for readability
-          }
         },
       },
-      plugins: {
-        legend: {
-          labels: {
-            color: "#FFFFFF" // White text for readability
-          }
-        }
-      }
-    },
-  });
-  setChartInstance(newChartInstance);
+    });
+    setChartInstance(newChartInstance);
     return () => {
-      newChartInstance.destroy();
+      newChartInstance && newChartInstance.destroy();
     };
-  }, [data]);
+  }, [temperatureData, pressureData]); // Include pressureData in the dependency array
 
   return (
     <div style={{ backgroundColor: "#141414", width: "100%", height: "100%", padding: "1rem" }}>
-      <canvas ref={chartRef} />
-      <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Temperature (°C)</p>
+      <canvas ref={chartRef}></canvas>
+      {/* <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px" }}>Temperature (°C) & Pressure</p> */}
     </div>
   );
 };
-export default TemperatureChart;
+export default TemperatureAndPressureChart;
