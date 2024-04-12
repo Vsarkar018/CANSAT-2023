@@ -3,6 +3,7 @@ const app = express();
 const socketio = require("socket.io");
 const fs = require("fs");
 app.use(require("cors")());
+app.use(express.json());
 const path = require("path");
 const csvFilePath = path.join(__dirname, "telemetry.csv");
 const csvHeader =
@@ -39,4 +40,29 @@ parser.on("data", telemetry => {
   fs.writeFile(csvFilePath, tele + '\n', { flag: 'a' }, () => {})
   // io.emit("telemetry", telemetryJSON);
   console.log(tele);
+
+});
+
+function sendXBeeFrame(telemetryFlag) {
+  const destination64 = "0013A20041F4525E"; // Replace XXXXXXXX with the actual 64-bit address of the destination XBee module
+  const frameToSend = {
+    type: 0x10, // ZigBee Transmit Request frame type
+    id: 0x01, // Frame ID
+    destination64: destination64, // 64-bit address of the destination XBee module
+    data: telemetryFlag // Data to be sent
+  };
+
+  serialPort.write(xbee.buildFrame(frameToSend), (err) => {
+    if (err) {
+      console.error("Error sending frame:", err);
+    } else {
+      console.log("Frame sent successfully!");
+    }
+  });
+}
+
+app.post("/telemetry", (req, res) => {
+  console.log(req.body);
+  sendXBeeFrame(req.body.telemetryFlag);
+  res.send("Frame sent");
 });

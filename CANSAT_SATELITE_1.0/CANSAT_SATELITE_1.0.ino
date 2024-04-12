@@ -9,9 +9,13 @@
 #include <SoftwareSerial.h>
 #include <Servo.h> 
 #include "state_logic.h"
+#define BUFFER_SIZE 128
+
+// Initialize buffer with all elements set to '\0'
+char buffer[BUFFER_SIZE] = { '\0' };
  
 Servo paraServo, esc;
-float thresholdAltitude = 251;
+float thresholdAltitude = 580;
 int parachuteFlag = 0;
 const long interval = 500;
 unsigned long previousMillis = 0;
@@ -22,6 +26,8 @@ int altitudeeFlag = 1 ;
 float altitudeeOffset = 0 ;
 float prev_altitude = 0;
 float alti_diff = 0; 
+int initial_state = 10 ;
+
 TinyGPSPlus gps;
 SoftwareSerial ss(0, 1); // RX, TX pins for GPS module
 
@@ -32,6 +38,9 @@ File dataFile;
 XBee xbee = XBee();
 XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x41f45000);
 ZBTxRequest zbTx;
+XBeeResponse response = XBeeResponse();
+ZBRxResponse rx = ZBRxResponse();
+
 
 // BNO
 uint16_t BNO055_SAMPLERATE_DELAY_MS = 100;
@@ -77,9 +86,14 @@ struct accelerometer
   float y = 0.0;
   float z = 0.0;
 };
-
+struct orientation{
+   float x = 0.0;
+  float y = 0.0;
+  float z = 0.0;
+};
 accelerometer accelerometerData;
 gyro gyroSpinRate;
+orientation orientationData;
 
 
 
@@ -91,44 +105,40 @@ gyro gyroSpinRate;
 #define OLED_RESET -1     // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C // I2C address of the OLED display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire2, OLED_RESET);
-int state ;
 
 
 
+int state = 0 ;
+
+//variables for testing purpose
+char test_status[32];
+int buzzer = 30;
 void setup()
 {
-
-
-// BLDC SETUP
-  // esc.attach(33,  1000, 2000); 
-  // delay(2000);
-  // esc.write(0);
-  // delay(2000);
-  // esc.write(20);
-  // delay(2000);
-  // esc.write(40);
-  // delay(2000);
-  //  esc.write(60);
-  // delay(2000);
-  // esc.write(80);
-  // delay(2000);
-  // esc.write(100);
-  // delay(2000);
-  //  esc.write(120);
-  // delay(2000);
-  // esc.write(140);
-  // delay(2000);
-  // esc.write(160);
-  // delay(2000);
-  // esc.write(180);
-
-
-
+  Serial2.begin(9600);
+  xbee.setSerial(Serial2);
+//  BLDC SETUP
+   esc.attach(33,  1000, 2000); 
+   delay(1000);
+   esc.write(0);
+   delay(1000);
+   esc.write(20);
+   delay(1000);
+    esc.write(60);
+   delay(1000);
+   esc.write(80);
+   delay(1000);
+   esc.write(100);
+   delay(1000);
+   esc.write(140);
+   delay(1000);
+   esc.write(180);
+  
   paraServo.attach(14);
   paraServo.write(0);
-  Serial2.begin(9600);
+  
   ss.begin(9600);
-  xbee.setSerial(Serial2);
+  
 
   //BNO 
   bno.begin();
@@ -143,6 +153,7 @@ void setup()
   SD.begin(BUILTIN_SDCARD);
 
   pinMode(voltageRefPin,INPUT);
+  pinMode(buzzer,OUTPUT);
 
   //OLCD Display
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
@@ -151,73 +162,93 @@ void setup()
 
 
   delay(1000);
+ 
+//  if (!(SD.exists("telemetry.csv") && SD.open("telemetry.csv").size() > 0)) {
+    transmit_initial_telemetry(state);
+    state = 1;
+    transmit_initial_telemetry(state);
+    test();
+    state = 2;
+    transmit_initial_telemetry(state);    
+//  }
 }
-
+int startTelemetryFlag = 0;
 void loop()
 {
+  Serial2.flush();
+  receieve_packet();
   currentMillis = millis();
-  if (currentMillis - previousMillis >= interval)
+  if (currentMillis - previousMillis >= interval && startTelemetryFlag )
   {
-    // Serial.println("Transmitting.....");
     timeStamping = currentMillis / 1000;
+    get_data();
     generateTelemetry();
-    transmitTelemetry();
+    transmitTelemetry(telemetry);
     writeDatainSD();
     previousMillis = currentMillis;
   }
+  activateBuzzer();
   display.clearDisplay();
-//  // // displayVoltage();
-//  // // displayTeamName();
-//  // // displayStateAbbreviation();
-   displayFlag();
-   displayAltitude();
-   display.display();
-//  // opentParachute();
-//  esc.write(100);
-//Serial.println(gnssLongitude);
-//Serial.println(gnssLatitude);
+  displayVoltage();
+  displayTeamName();
+  display.display();
+delay(BNO055_SAMPLERATE_DELAY_MS );
 }
-
+float alitude_dif = 0;
+float prev_acc = 0;
+float prev_alti = 0;
+float acce_diff = 0;
+void get_data(){
+    altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA) - altitudeeOffset;
+   if (altitudee > 0 && altitudeeFlag && altitudee < 1500){
+     altitudeeOffset = altitudee;
+     altitudeeFlag = 0; 
+   }
+   if(altitudee > 1500){
+    altitudee = 0 ;
+   }
+   
+  pressure = bmp.pressure;
+  temperature = bmp.temperature;
+  voltage = getVoltage(); 
+  gps_data();
+  getAccelerometerData();
+  getGyroSpinRate();
+  getOrientation();
+  state = findState(altitudee,accelerometerData.z);
+  alitude_dif = altitudee - prev_alti;
+  acce_diff = accelerometerData.z - prev_acc;
+  if(prev_alti == 0){
+    alitude_dif = 0;
+  }
+  if (prev_acc == 0){
+    acce_diff = 0;
+  }
+  prev_alti = altitudee;
+  prev_acc = accelerometerData.z;
+  
+}
 void generateTelemetry()
 {
   packetCount++;
-  altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA) - altitudeeOffset ;
-  
-  // if (altitudee > 0 && altitudeeFlag && altitudee < 1500){
-  //   altitudeeOffset = altitudee;
-  //   altitudeeFlag = 0; 
-  // }
-  // prev_alti = altitudee;
-
-  pressure = bmp.pressure;
-  temperature = bmp.temperature;
-  voltage = getVoltage();
-  gnssTime =gps.time.second(); 
-//  gnssLongitude = gps.location.lng();
-   lati(gps.location.lat(), gps.location.isValid(), 11, 6);
-   lngi(gps.location.lng(), gps.location.isValid(), 11, 6);
-  gnssAltitude = gps.altitude.meters();
-  gnssSats = gps.satellites.value();
-  getAccelerometerData();
-  getGyroSpinRate();
-  float alit_diff = altitudee -  prev_altitude;
   snprintf(telemetry, MAX_TELEMETRY_SIZE,
-           "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\r\n",
+           "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\r\n",
            teamID, timeStamping, packetCount, altitudee, pressure,
            temperature, voltage, gnssTime, gnssLatitude, gnssLongitude,
-           gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y, accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z,state);
-            // snprintf(telemetry, MAX_TELEMETRY_SIZE,
-          //  "%.1f,%.1f,%d\r\n",
-          // altitudee,alit_diff,state);
-          
+           gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y,
+           accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z,orientationData.x,orientationData.y,orientationData.z  ,state+3);
 }
-
-void transmitTelemetry()
-{
-  zbTx = ZBTxRequest(addr64, (uint8_t *)telemetry, strlen(telemetry));
-  xbee.send(zbTx);
+bool transmitTelemetry(char data[]){
+  zbTx = ZBTxRequest(addr64, (uint8_t *)data, strlen(data));
+   xbee.send(zbTx);
+   return true;
 }
-
+char initi_tele[32];
+void transmit_initial_telemetry(int inti_state){
+//  snprintf(initi_tele, 32,"%d,%.2f,%.2f,%.2f\r\n",inti_state,alitude_dif,altitudee,acce_diff);
+  snprintf(initi_tele, 32,"%d,\r\n",inti_state);
+  transmitTelemetry(initi_tele);
+}
 
 void writeDatainSD(){
 
@@ -237,7 +268,7 @@ void writeDatainSD(){
 float getVoltage()
 {
   voltageRef = analogRead(voltageRefPin);
- return (voltageRef*113)/1000;
+ return (voltageRef*2.2)/224.2;
 }
 
 void getAccelerometerData()
@@ -257,13 +288,20 @@ void getGyroSpinRate()
   gyroSpinRate.y = gyroEvent.gyro.y;
   gyroSpinRate.z = gyroEvent.gyro.z;
 }
-
+void getOrientation()
+{
+  sensors_event_t orientationDataEvent;
+  bno.getEvent(&orientationDataEvent, Adafruit_BNO055::VECTOR_EULER);
+  orientationData.x = orientationDataEvent.gyro.x;
+  orientationData.y = orientationDataEvent.gyro.y;
+  orientationData.z = orientationDataEvent.gyro.z;
+}
 
 void displayVoltage() {
   display.setTextSize(3);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(15, 10);
-  display.print(voltage);
+  display.print(voltage );
   display.print(F("V"));
 }
 
@@ -274,58 +312,33 @@ void displayTeamName() {
   display.print(F("DEBRIS"));
 }
 
-void displayStateAbbreviation() {
-  String stateAbbreviation = "THE STATE";
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(55, 0);
-  display.print(stateAbbreviation);
-}
-
 
 void opentParachute(){
   if (altitudee > thresholdAltitude && altitudee < 1500){
     parachuteFlag = 1 ;
   }
   if (parachuteFlag && altitudee < thresholdAltitude){
-    paraServo.write(180);
     paraServo.write(0);
     paraServo.write(180);
   }
 
 }
 
-void displayAltitude() {
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 15);
-  display.print(gnssLongitude);
-}
-
-
-void displayFlag() {  // String stateAbbreviation = "THE STATE";
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.print(gnssLatitude);
-}
-
-
-static void lati(float val, bool valid, int len, int prec)
+static void gps_data()
 {
-if (valid) 
+   
+if (gps.location.isValid()) 
  {
-  gnssLatitude = val;
-
+  gnssLongitude = gps.location.lng();
+  gnssLatitude =  gps.location.lat();
   }
-  smartDelay(0);
+  if(gps.satellites.isValid()){
+    gnssSats = gps.satellites.value();
+  }
+if( gps.altitude.isValid()){
+  gnssAltitude = gps.altitude.meters();
 }
-static void lngi(float val, bool valid, int len, int prec)
-{
-if (valid) 
- {
-  gnssLongitude = val;
-  }
+  gnssTime =gps.time.second();
   smartDelay(0);
 }
 static void smartDelay(unsigned long ms) {
@@ -335,4 +348,49 @@ static void smartDelay(unsigned long ms) {
       gps.encode(ss.read());
     }
   } while (millis() - start < ms);
+}
+
+void activateBuzzer(){
+//  if(altitudee < 30 && state == 6 ){
+//    digitalWrite(buzzer,1);
+//  }else{
+    digitalWrite(buzzer,0);
+//  }
+}
+
+bool test(){
+  delay(1000);
+ if(bno.begin() && bmp.begin_I2C(119, &Wire) && ss.available() ){
+  delay(2000);
+  Serial8.begin(9600); 
+  if(Serial8.available()){
+    return true;
+  }
+ } 
+ delay(2000);
+ return true; 
+}
+void receieve_packet(){
+  xbee.readPacket();
+  
+  if (xbee.getResponse().isAvailable()) {
+    if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE) {
+      xbee.getResponse().getZBRxResponse(rx);
+      int len = rx.getDataLength();
+      char data[len + 1];
+      for (int i = 0; i < len; i++) {
+        data[i] = rx.getData(i);
+      }
+      data[len] = '\0'; // Null-terminate the string
+      startTelemetryFlag = atoi(data);
+    }
+  }
+}
+
+float u = 0 ,v;
+void velocity(){
+  double tiltAngle = orientationData.x * DEG_TO_RAD;
+  double xAccel = linearAccelData.acceleration.x * cos(tiltAngle);
+  double timee = BNO055_SAMPLERATE_DELAY_MS / 1000.0;
+  v = u + timee;
 }
