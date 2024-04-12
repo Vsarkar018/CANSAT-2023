@@ -1,48 +1,59 @@
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
+import { useGlobalContext } from "../../context/appContext";
 
 const OrientationChart = () => {
-  // Function to simulate orientation data for X, Y, Z axes
-  const generateDemoData = (count) => {
-    return Array.from({ length: count }, () => ({
-      x: +(Math.random() * 180 - 90).toFixed(2), // Simulating degrees from -90 to 90
-      y: +(Math.random() * 180 - 90).toFixed(2),
-      z: +(Math.random() * 180 - 90).toFixed(2),
-    }));
-  };
-
-  const demoData = generateDemoData(20);
-
+  const { telemetry } = useGlobalContext();
   const [chartData, setChartData] = useState({
-    labels: Array.from({ length: 20 }, (_, i) => `S ${i + 1}`),
+    labels: [],
     datasets: [
       {
         label: "X Orientation",
-        data: demoData.map(data => data.x),
+        data: [],
         fill: false,
         borderColor: '#FF6384', // Red for X
         tension: 0.1,
-        borderWidth: 1, // Decreased line width
       },
       {
         label: "Y Orientation",
-        data: demoData.map(data => data.y),
+        data: [],
         fill: false,
         borderColor: '#36A2EB', // Blue for Y
         tension: 0.1,
-        borderWidth: 1, // Decreased line width
       },
       {
         label: "Z Orientation",
-        data: demoData.map(data => data.z),
+        data: [],
         fill: false,
         borderColor: '#FFCE56', // Yellow for Z
         tension: 0.1,
-        borderWidth: 1, // Decreased line width
       },
     ],
   });
+
+
+  useEffect(() => {
+    if (telemetry) {
+      // Assuming the telemetry data format and that gyro_x, gyro_y, and gyro_z are available
+      const parts = telemetry.split(',');
+      const gyroX = parseFloat(parts[11]); // Adjust the index based on your telemetry data
+      const gyroY = parseFloat(parts[12]);
+      const gyroZ = parseFloat(parts[13]);
+      const newLabel = chartData.labels.length + 1; // Increment label for new data point
+
+      setChartData(prevData => ({
+        labels: [...prevData.labels, `S ${newLabel}`].slice(-20), // Keep last 20 entries
+        datasets: prevData.datasets.map((dataset, index) => {
+          let data;
+          if (index === 0) data = [...dataset.data, gyroX];
+          else if (index === 1) data = [...dataset.data, gyroY];
+          else data = [...dataset.data, gyroZ];
+          return { ...dataset, data: data.slice(-20) }; // Keep last 20 data points for each axis
+        }),
+      }));
+    }
+  }, [telemetry]); // Update chart data whenever new telemetry data is received
 
   const options = {
     scales: {
@@ -81,13 +92,11 @@ const OrientationChart = () => {
         },
       },
     },
-    // maintainAspectRatio: false, // This will allow the chart to use maximum container space  
   };
 
   return (
     <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px" }}>
       <Line data={chartData} options={options} />
-      {/* <p style={{ color: "#ffffff", textAlign: "center", marginTop: "10px", fontSize: "12px" }}>Orientation (Degrees)</p> */}
     </div>
   );
 };

@@ -3,6 +3,10 @@ import io from "socket.io-client";
 const socket = io("http://localhost:5000");
 const AppContext = React.createContext();
 
+export const useGlobalContext = () => {
+  return useContext(AppContext);
+};
+
 const AppProvider = ({ children }) => {
 
   const [data, setData] = useState({
@@ -70,10 +74,6 @@ const AppProvider = ({ children }) => {
       {children}
     </AppContext.Provider>
   );
-};
-
-export const useGlobalContext = () => {
-  return useContext(AppContext);
 };
 
 export { AppProvider };

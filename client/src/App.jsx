@@ -1,17 +1,13 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import Row from "./Components/Row";
-import Team from "./Components/Team";
 import Overview from "./Components/DataComponent/Overview";
-import Temperature from "./Components/DataComponent/Temperature";
 import Speed from "./Components/DataComponent/Speed";
-import Pressure from "./Components/DataComponent/Pressure";
-import Acceleration from "./Components/DataComponent/Acceleration";
+import Altitude from "./Components/DataComponent/Altitude";
+import TemperatureAndPressureChart from "./Components/DataComponent/TemperatureAndPressureChart";
 import Location from "./Components/DataComponent/Location";
 import Roll from "./Components/DataComponent/Roll";
-import Pitch from "./Components/DataComponent/Pitch";
 import Table from "./Components/DataComponent/Table";
-import Voltage from "./Components/DataComponent/Voltage";
 
 function App() {
   const [temperatureData, setTemperatureData] = useState([]);
@@ -36,15 +32,15 @@ function App() {
           <div className="overview-container">
             <Row className="row"> 
               <Overview className="component" />
-              <Temperature className="component" temperatureData={temperatureData} pressureData={pressureData} />
+              <TemperatureAndPressureChart className="component" />
             </Row> 
             <Row className="row">
-            <Speed className="component" />
-              <Acceleration className="component" />
+              <Speed className="component" />
+              <Altitude className="component" />
             </Row> 
             <div
             style={{ width: "60%" }}
-            className="border border-gray-400 p-2 h-full row">
+            className="border border-gray-400 p-1 h-full row">
               <Roll className="component" />
             </div>
           </div>

@@ -11,8 +11,6 @@
   overflow: auto;
 }
 
-
-
 .row {
   display: flex;
   flex-wrap: wrap; /* Allows child elements to wrap if needed */
@@ -33,9 +31,9 @@
 }
 
 .left-half, .right-half {
+  height: 100%; /* Ensure they take up the full height */
   display: flex;
   flex-direction: column;
-  
 }
 
 .component, .telemetry-container, .location-container {
@@ -56,6 +54,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 35vh;
 }
 
 .row{
