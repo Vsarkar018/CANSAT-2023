@@ -29,17 +29,17 @@ SatelliteState updateState(float altitudee, float acceleration) {
   if (prev_acce == 0){
     acc_dif = 0;
   }
-  if(altitude_diff > 0.4){
+  if(altitude_diff > 0.5){
     currentState = ASCENT;
   }
-  if (altitude_diff < -0.4){
+  if (altitude_diff < -0.5){
     currentState =  DESCENT;
   }
-  if (abs(acc_dif) >= 0 && abs(acc_dif) <= 0.4 && abs(altitude_diff) >=0  && abs(altitude_diff) < 0.3 && altitudee > apogeeAltitude ){
+  if (abs(acc_dif) >= 0 && abs(acc_dif) <= 0.4 && abs(altitude_diff) >=0  && abs(altitude_diff) < 0.5 && altitudee > apogeeAltitude ){
     currentState = APOGEE_REACHED;
     impactFlag = 1;
   }
-  if(altitudee < 10 &&  impactFlag){
+  if(abs(acc_dif) >= 0 && abs(acc_dif) <= 0.4 && abs(altitude_diff) >=0  && abs(altitude_diff) < 0.5 && altitudee < 10 &&  impactFlag){
     currentState = IMPACT;
   }
    

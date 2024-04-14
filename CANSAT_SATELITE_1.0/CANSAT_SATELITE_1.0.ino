@@ -91,6 +91,10 @@ struct orientation{
   float y = 0.0;
   float z = 0.0;
 };
+float u = 0 ,v;
+
+
+
 accelerometer accelerometerData;
 gyro gyroSpinRate;
 orientation orientationData;
@@ -113,26 +117,30 @@ int state = 0 ;
 //variables for testing purpose
 char test_status[32];
 int buzzer = 30;
+
+int startTelemetryFlag = 0;
+
 void setup()
 {
+  Serial2.flush(); 
   Serial2.begin(9600);
   xbee.setSerial(Serial2);
 //  BLDC SETUP
    esc.attach(33,  1000, 2000); 
-   delay(1000);
-   esc.write(0);
-   delay(1000);
-   esc.write(20);
-   delay(1000);
-    esc.write(60);
-   delay(1000);
-   esc.write(80);
-   delay(1000);
-   esc.write(100);
-   delay(1000);
-   esc.write(140);
-   delay(1000);
-   esc.write(180);
+//   delay(1000);
+//   esc.write(0);
+//   delay(1000);
+//   esc.write(20);
+//   delay(1000);
+//    esc.write(60);
+//   delay(1000);
+//   esc.write(80);
+//   delay(1000);
+//   esc.write(100);
+//   delay(1000);
+//   esc.write(140);
+//   delay(1000);
+//   esc.write(180);
   
   paraServo.attach(14);
   paraServo.write(0);
@@ -161,27 +169,30 @@ void setup()
   display.display();
 
 
+
+   Serial2.flush(); 
+  if (SD.open("telemetry.csv").size() == 0) {
+    transmit_initial_telemetry(0);
+    test();
+    transmit_initial_telemetry(2);
+    delay(1000);
+    transmit_initial_telemetry(-1);
+  }else {
+    startTelemetryFlag = 1;   
+  }
   delay(1000);
  
-//  if (!(SD.exists("telemetry.csv") && SD.open("telemetry.csv").size() > 0)) {
-    transmit_initial_telemetry(state);
-    state = 1;
-    transmit_initial_telemetry(state);
-    test();
-    state = 2;
-    transmit_initial_telemetry(state);    
-//  }
+  
 }
-int startTelemetryFlag = 0;
+
 void loop()
 {
-  Serial2.flush();
+ 
   receieve_packet();
   currentMillis = millis();
   if (currentMillis - previousMillis >= interval && startTelemetryFlag )
   {
     timeStamping = currentMillis / 1000;
-    get_data();
     generateTelemetry();
     transmitTelemetry(telemetry);
     writeDatainSD();
@@ -192,14 +203,14 @@ void loop()
   displayVoltage();
   displayTeamName();
   display.display();
-delay(BNO055_SAMPLERATE_DELAY_MS );
+// delay(BNO055_SAMPLERATE_DELAY_MS );
 }
 float alitude_dif = 0;
 float prev_acc = 0;
 float prev_alti = 0;
 float acce_diff = 0;
-void get_data(){
-    altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA) - altitudeeOffset;
+void generateTelemetry()
+{altitudee = bmp.readAltitude(SEALEVELPRESSURE_HPA);
    if (altitudee > 0 && altitudeeFlag && altitudee < 1500){
      altitudeeOffset = altitudee;
      altitudeeFlag = 0; 
@@ -216,6 +227,8 @@ void get_data(){
   getGyroSpinRate();
   getOrientation();
   state = findState(altitudee,accelerometerData.z);
+  opentParachute();
+  get_velocity();
   alitude_dif = altitudee - prev_alti;
   acce_diff = accelerometerData.z - prev_acc;
   if(prev_alti == 0){
@@ -224,19 +237,17 @@ void get_data(){
   if (prev_acc == 0){
     acce_diff = 0;
   }
-  prev_alti = altitudee;
-  prev_acc = accelerometerData.z;
   
-}
-void generateTelemetry()
-{
+  
   packetCount++;
   snprintf(telemetry, MAX_TELEMETRY_SIZE,
-           "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\r\n",
+           "%s,%lu,%u,%.1f,%u,%.1f,%.2f,%lu,%.4f,%.4f,%.1f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\r\n",
            teamID, timeStamping, packetCount, altitudee, pressure,
            temperature, voltage, gnssTime, gnssLatitude, gnssLongitude,
            gnssAltitude, gnssSats, accelerometerData.x, accelerometerData.y,
-           accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z,orientationData.x,orientationData.y,orientationData.z  ,state+3);
+           accelerometerData.z, gyroSpinRate.x, gyroSpinRate.y, gyroSpinRate.z,orientationData.x,orientationData.y,orientationData.z,v,state + 2);
+           prev_alti = altitudee;
+  prev_acc = accelerometerData.z;
 }
 bool transmitTelemetry(char data[]){
   zbTx = ZBTxRequest(addr64, (uint8_t *)data, strlen(data));
@@ -301,8 +312,8 @@ void displayVoltage() {
   display.setTextSize(3);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(15, 10);
-  display.print(voltage );
-  display.print(F("V"));
+  display.print(altitudee);
+//  display.print(F("V"));
 }
 
 void displayTeamName() {
@@ -317,9 +328,10 @@ void opentParachute(){
   if (altitudee > thresholdAltitude && altitudee < 1500){
     parachuteFlag = 1 ;
   }
-  if (parachuteFlag && altitudee < thresholdAltitude){
-    paraServo.write(0);
-    paraServo.write(180);
+  if (parachuteFlag && altitudee < thresholdAltitude && parachuteFlag){
+    paraServo.write(115);
+    state = 13;
+    parachuteFlag = 0;
   }
 
 }
@@ -358,17 +370,18 @@ void activateBuzzer(){
 //  }
 }
 
-bool test(){
+void test(){
   delay(1000);
  if(bno.begin() && bmp.begin_I2C(119, &Wire) && ss.available() ){
   delay(2000);
   Serial8.begin(9600); 
   if(Serial8.available()){
-    return true;
+   transmit_initial_telemetry(1);
+  }else {
+    transmit_initial_telemetry(1);
   }
  } 
  delay(2000);
- return true; 
 }
 void receieve_packet(){
   xbee.readPacket();
@@ -387,10 +400,23 @@ void receieve_packet(){
   }
 }
 
-float u = 0 ,v;
-void velocity(){
+
+void get_velocity() {
+  sensors_event_t linearAccelerometerEvent;
+  bno.getEvent(&linearAccelerometerEvent, Adafruit_BNO055::VECTOR_LINEARACCEL);
+  
+  // Extract linear acceleration along the x-axis
+  float line_acc_x = linearAccelerometerEvent.acceleration.z;
+  
+  // Convert tilt angle to radians
   double tiltAngle = orientationData.x * DEG_TO_RAD;
-  double xAccel = linearAccelData.acceleration.x * cos(tiltAngle);
-  double timee = BNO055_SAMPLERATE_DELAY_MS / 1000.0;
-  v = u + timee;
+  
+  // Calculate vertical acceleration component
+  double verticalAccel = line_acc_x * cos(tiltAngle);
+  
+  // Calculate change in velocity using constant acceleration
+  double deltaV = verticalAccel * (BNO055_SAMPLERATE_DELAY_MS / 1000.0);
+  
+  // Update velocity
+  v += deltaV;
 }
