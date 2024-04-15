@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS } from "chart.js/auto";
 import { useGlobalContext } from "../../context/appContext";
 
 const Altitude = () => {
@@ -10,10 +9,11 @@ const Altitude = () => {
     labels: [],
     datasets: [
       {
-        label: "Altitude",
+        label: "Altitude (m)",
         data: [],
         fill: false,
-        borderColor: 'rgb(54, 162, 235)', // A different color for altitude
+        borderColor: '#DA70D6', // A different color for altitude
+        borderWidth: 2,
         tension: 0.1,
       },
     ],
@@ -24,12 +24,12 @@ const Altitude = () => {
     // and that you're interested in the latest telemetry data for updates
     if (telemetry) {
       const time = telemetry.split(',')[1]; // Assuming this is your time data
-      const alt = telemetry.split(',')[3]; // Assuming this is your altitude data and converting to a number
+      const alt = parseFloat(telemetry.split(',')[3]); // Assuming this is your altitude data and converting to a number
       setChartData(prevData => ({
-        labels: [...prevData.labels, time].slice(-20), // Keep only the last 20 entries
+        labels: [...prevData.labels, time],
         datasets: prevData.datasets.map(dataset => ({
           ...dataset,
-          data: [...dataset.data, alt].slice(-20), // Keep only the last 20 entries
+          data: [...dataset.data, alt],
         })),
       }));
     }
@@ -62,15 +62,11 @@ const Altitude = () => {
         },
       },
     },
-    elements: {
-      point: {
-        radius: 0, // Hide points on the line
-      },
-    },
+    
   };
 
   return (
-    <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px", fontSize: "8px"}}>
+    <div style={{ background: "#141414", width: "100%", height: "220px", padding: "20px", fontSize: "8px", borderRadius: '8px'}}>
       <Line data={chartData} options={options} />
     </div>
   );

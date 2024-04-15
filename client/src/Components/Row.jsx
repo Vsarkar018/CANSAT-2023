@@ -10,7 +10,7 @@ const Row = ({ children }) => {
           <div
             key={ind}
             style={{ width: `${100 / s}%` }}
-            className="border border-gray-400 p-2 h-full"
+            className="p-2 h-full"
           >
             {child}
           </div>

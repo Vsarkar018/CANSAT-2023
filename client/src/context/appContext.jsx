@@ -28,38 +28,32 @@ const AppProvider = ({ children }) => {
     gyro_x: 0,
     gyro_y: 0,
     gyro_z: 0,
+    speed: 0,
     state: "",
   });
 
+
+  const [telemetry, setTelemetry] = useState("0,0,0,0,0,0,0,0, 23.1076436,72.496275,0,0,0,0,0,0,0,0,0");
   // useEffect(() => {
-  //   const generateRandomData = () => {
-  //     setData(prevData => ({
-  //       ...prevData,
-  //       time_stamping: Date.now(),
-  //       packet_count: prevData.packet_count + 1,
-  //       altitude:( Math.random() * 100).toFixed(6),
-  //       pressure: (Math.random() * 1000).toFixed(6),
-  //       temperature: (Math.random() * 50).toFixed(6),
-  //       voltage:( Math.random() * 5).toFixed(6),
-  //       gnss_time: Date.now(),
-  //       gnss_lat:( Math.random() * 90).toFixed(6),
-  //       gnss_lon: (Math.random() * 180).toFixed(6),
-  //       gnss_alti: (Math.random() * 100).toFixed(6),
-  //       gnss_sats: (Math.floor(Math.random() * 20)).toFixed(6),
-  //       accel: (Math.random() * 10).toFixed(6),
-  //       gyro: (Math.random() * 5).toFixed(6),
-  //       state: "OK",
-  //     }));
-  //   };
+  //   // Set up an interval to simulate telemetry updates every second
+  //   const interval = setInterval(() => {
+  //     // Generate random changes for latitude and longitude for demonstration
+  //     const randomLatChange = (Math.random() - 0.5) * 0.001; // small random latitude change
+  //     const randomLonChange = (Math.random() - 0.5) * 0.001; // small random longitude change
+  //     const parts = telemetry.split(",");
+  //     const newLat = parseFloat(parts[8]) + randomLatChange;
+  //     const newLon = parseFloat(parts[9]) + randomLonChange;
 
-  //   const intervalId = setInterval(generateRandomData, 1000);
+  //     // Create a new telemetry string with updated values
+  //     const newTelemetry = `0,0,0,0,0,0,0,0,${newLat.toFixed(4)},${newLon.toFixed(4)},0,0,0,0,0,0,0,0,0`;
+  //     setTelemetry(newTelemetry);
+  //   }, 500);
 
-  //   return () => clearInterval(intervalId);
-  // }, []);
+  //   // Clean up the interval when the component unmounts
+  //   return () => clearInterval(interval);
+  // }, [telemetry]);
 
 
-
-  const [telemetry, setTelemetry] = useState("");
   useEffect(() => {
     socket.on("telemetry", telemetryData => {
       setTelemetry(telemetryData);

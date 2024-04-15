@@ -1,49 +1,60 @@
 import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 import { useGlobalContext } from '../../context/appContext';
 
-// Simulated function that fetches or receives new telemetry data
-// Replace this with your actual data fetching or subscription logic
-const fetchTelemetryData = () => {
-  return "2022ASI-043,22,1,1848.8,81001,22.9,1.13,0,0.0000,0.0000,0.0,0,8.55,-2.86,2.62,0.00,0.00,0.00,1";
-};
+const telemetryFields = [
+  "Team ID", "Time stamping", "Packet count", "Altitude", "Pressure", 
+  "Temperature", "Voltage", "GNSS time", "GNSS lat", "GNSS lon", 
+  "GNSS alti", "GNSS sats", "Accel X", "Accel Y", "Accel Z", 
+  "Gyro X", "Gyro Y", "Gyro Z", "Speed", "State"
+];
+const socket = io("http://localhost:5000");
 
 const TelemetryDisplay = () => {
-  const [telemetryData, setTelemetryData] = useState([]);
-  const { telemetry } = useGlobalContext();
+  const [telemetryLines, setTelemetryLines] = useState([]);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      const { telemetry } = useGlobalContext();
-      const newTelemetryData = telemetry;
-      setTelemetryData(currentData => [...currentData.slice(-9), newTelemetryData]);
-    }, 1000); // Fetch new telemetry data every 1 second
+    socket.on('telemetry', (telemetryData) => {
+      const newLines = telemetryData.split('\n').filter(line => line);
+      setTelemetryLines(prevLines => [...prevLines, ...newLines].slice(-12));
+    });
 
-    return () => clearInterval(intervalId);
+    return () => socket.off('telemetry');
   }, []);
 
-  const telemetryDisplayStyle = {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    color: 'white',
-    padding: '10px',
-    borderRadius: '5px',
-    maxWidth: '300px',
-    maxHeight: '200px',
-    overflowY: 'auto',
-  };
-
   return (
-    <div style={telemetryDisplayStyle}>
-      <h3>TELEMETRY</h3>
-      <ul>
-        {telemetryData.map((data, index) => (
-          <li key={index}>
-            {data}
-          </li>
+    <div style={{
+      padding: '20px',
+      maxWidth: '800px',
+      height: '330px',
+      margin: '0',
+      color: '#E0E0E0', // Light grey for text to improve readability
+      fontSize: '12px',
+      backgroundColor: '#191A1C', // Dark background color
+      borderRadius: '8px', // Rounded corners for modern look
+      boxShadow: '0 4px 8px rgba(0,0,0,0.1)' // Subtle shadow for depth
+    }}>
+      <div style={{
+        fontWeight: 'bold',
+        marginBottom: '5px',
+        borderBottom: '1px solid #333', // Separator with a subtle line
+        paddingBottom: '5px'
+      }}>
+        TELEMETRY DATA
+      </div>
+      <div style={{
+        fontSize: '9.1px',
+        maxHeight: '400px',
+        overflowY: 'auto',
+        background: '#1F2226', // Slightly lighter dark for contrast against container
+        paddingLeft: '1px',
+        borderRadius: '4px', // Rounded corners inside scrollable
+        border: '1px solid #333' // Subtle border for definition
+      }}>
+        {telemetryLines.map((line, index) => (
+          <p key={index} style={{ margin: '2px' }}>{line}</p>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

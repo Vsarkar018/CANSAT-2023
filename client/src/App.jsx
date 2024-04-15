@@ -8,52 +8,49 @@ import TemperatureAndPressureChart from "./Components/DataComponent/TemperatureA
 import Location from "./Components/DataComponent/Location";
 import Roll from "./Components/DataComponent/Roll";
 import Table from "./Components/DataComponent/Table";
+import Acceleration from "./Components/DataComponent/Acceleration";
 
 function App() {
   const [temperatureData, setTemperatureData] = useState([]);
   const [pressureData, setPressureData] = useState([]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setTemperatureData(currentData => {
-        const newTemperature = Math.random() * 100;
-        return [...currentData, newTemperature].slice(-10);
-      });
-      setPressureData(currentData => {
-        const newPressure = Math.random() * 1000;
-        return [...currentData, newPressure].slice(-10);
-      });
+      setTemperatureData(currentData => [...currentData, Math.random() * 100].slice(-10));
+      setPressureData(currentData => [...currentData, Math.random() * 1000].slice(-10));
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
   return (
-    <div class="dashboard-container">
-      <div className="left-half">
-        <div className="components-container">
+    <div className="dashboard-container bg-dark text-light" style={{ fontFamily: 'Arial, sans-serif', minHeight: '100vh' }}>
+      <div className="left-half flex flex-col">
+        <div className="components-container flex-grow">
           <div className="overview-container">
-            <Row className="row"> 
-              <Overview className="component" />
-              <TemperatureAndPressureChart className="component" />
-            </Row> 
-            <Row className="row">
-              <Speed className="component" />
-              <Altitude className="component" />
-            </Row> 
-            <div
-            style={{ width: "60%" }}
-            className="border border-gray-400 p-1 h-full row">
-              <Roll className="component" />
-            </div>
+            <Row className="row mb-4">
+              <Overview className="component flex-grow" />
+              <TemperatureAndPressureChart className="component flex-grow" />
+            </Row>
+            <Row className="row mb-4">
+              <Speed className="component flex-grow" />
+              <Altitude className="component flex-grow" />
+            </Row>
+            <Row className="row mb-4">
+            <Roll className="component flex-grow" />
+              <Acceleration className="component flex-grow" />
+            </Row>
           </div>
         </div>
       </div>
-      <div className="right-half" style={{height:"63vh"}}>
-      <Location/>
-      </div>
-      <div>
-        <Table/>
+      <div className="right-half">
+        <div className="right-half-map" style={{height:"50vh"}}>
+          <Location />
         </div>
+        <div className="right-half-telemetry" style={{height:"50vh"}}>
+          <Table />
+        </div>
+      </div>
     </div>
-    
   );
 }
 

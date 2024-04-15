@@ -1,76 +1,80 @@
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS } from "chart.js/auto";
 import { useGlobalContext } from "../../context/appContext";
 
-  const Speed = () => {
-    const [labels, setLabels] = useState([]);
-    const [speeds, setSpeeds] = useState([]);
-    const { telemetry } = useGlobalContext();
-  
-    useEffect(() => {
-      if (telemetry) {
-        // Assuming the telemetry data string format and speed is at a specific index
-        const parts = telemetry.split(',');
-        const speed = parseFloat(parts[2]); // Example: speed is at index 2, adjust as per your data
-        const newLabel = labels.length + 1; // Increment label for new data point
-        
-        setLabels((prevLabels) => [...prevLabels, newLabel].slice(-20)); // Keep only the last 20 entries
-        setSpeeds((prevSpeeds) => [...prevSpeeds, speed].slice(-20)); // Keep only the last 20 speed data points
-      }
-    }, [telemetry]);
+const Speed = () => {
+  const { telemetry } = useGlobalContext();
+  const [chartData, setChartData] = useState({
+    labels: [], // Time labels for X-axis
+    datasets: [
+      {
+        label: "Speed (m/s)",
+        data: [], // Speed data for Y-axis
+        borderColor: 'rgb(54, 162, 235)', // A different color for speed
+        borderWidth: 2,
+        tension: 0.1, // Smoothens the line
+        fill: false,
+      },
+    ],
+  });
 
-    const speedData = {
-      labels, // Use the updated labels state
-      datasets: [
-        {
-          label: "Speed",
-          data: speeds, // Use the updated speeds state
-          fill: false,
-          borderColor: 'rgb(255, 99, 132)',
-          tension: 0.1,
+  useEffect(() => {
+    if (telemetry) {
+      const parts = telemetry.split(',');
+      const time = parts[1]; // Assuming the second item is the time
+      const speed = parseFloat(parts[18]); // Assuming the 19th item is speed
+
+      setChartData(prevData => ({
+        labels: [...prevData.labels, time],
+        datasets: prevData.datasets.map(dataset => ({
+          ...dataset,
+          data: [...dataset.data, speed],
+        })),
+      }));
+    }
+  }, [telemetry]); // Effect runs whenever telemetry changes
+
+  const options = {
+    scales: {
+      x: {
+        grid: {
+          color: "#282828", // Styling grid lines
         },
-      ],
-    };
-    
-    const options = {
-      scales: {
-        x: {
-          grid: {
-            color: "#282828", // Use a color from your palette
-          },
-          ticks: {
-            color: "#ffffff", // Use a white color for better readability on a dark background
-          },
-        },
-        y: {
-          grid: {
-            color: "#282828", // Use a color from your palette
-          },
-          ticks: {
-            color: "#ffffff", // Use a white color for better readability on a dark background
-          },
+        ticks: {
+          color: "#ffffff", // Styling tick labels
         },
       },
-      plugins: {
-        legend: {
-          labels: {
-            color: "#ffffff", // Use a white color for better readability on a dark background
-          },
+      y: {
+        beginAtZero: true, // Ensuring Y-axis starts at zero
+        grid: {
+          color: "#282828", // Styling grid lines
+        },
+        ticks: {
+          color: "#ffffff", // Styling tick labels
         },
       },
-      elements: {
-        point: {
-          radius: 0, // Hide points on the line
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: "#ffffff", // Styling legend labels
         },
       },
-    };
-  
+    },
+    elements: {
+      line: {
+        borderWidth: 2,
+      },
+      point: {
+        backgroundColor: "#230046",
+      },
+    },
+  };
+
   return (
-    <div style={{ background: "#141414", width: "100%", height: "100%", padding: "20px"}}>
-      <Line data={speedData} options={options} />
+    <div style={{ background: "#141414", width: "100%", height: "220px", padding: "20px", borderRadius: '8px' }}>
+      <Line data={chartData} options={options} />
     </div>
-      
   );
 };
 

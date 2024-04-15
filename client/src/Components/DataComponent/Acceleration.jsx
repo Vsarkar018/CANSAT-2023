@@ -1,33 +1,33 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { useGlobalContext } from "../../context/appContext";
 
-const OrientationChart = () => {
+const AccelerationChart = () => {
   const { telemetry } = useGlobalContext();
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
       {
-        label: "X Orientation",
+        label: "X Acceleration",
         data: [],
         fill: false,
-        borderColor: '#FF6384', // Red for X
+        borderColor: '#E57373',
         borderWidth: 2,
         tension: 0.1,
       },
       {
-        label: "Y Orientation",
+        label: "Y Acceleration",
         data: [],
         fill: false,
-        borderColor: '#36A2EB', // Blue for Y
+        borderColor: '#81C784',
         borderWidth: 2,
         tension: 0.1,
       },
       {
-        label: "Z Orientation",
+        label: "Z Acceleration",
         data: [],
         fill: false,
-        borderColor: '#FFCE56', // Yellow for Z
+        borderColor: '#BA68C8',
         borderWidth: 2,
         tension: 0.1,
       },
@@ -36,20 +36,19 @@ const OrientationChart = () => {
 
   useEffect(() => {
     if (telemetry) {
-      // Assuming the telemetry data format and that gyro_x, gyro_y, and gyro_z are available
       const parts = telemetry.split(',');
-      const gyroX = parseFloat(parts[15]); // Adjust the index based on your telemetry data
-      const gyroY = parseFloat(parts[16]);
-      const gyroZ = parseFloat(parts[17]);
+      const accelX = parseFloat(parts[12]); // Adjust the index based on your telemetry data
+      const accelY = parseFloat(parts[13]);
+      const accelZ = parseFloat(parts[14]);
       const newLabel = chartData.labels.length + 1; // Increment label for new data point
 
       setChartData(prevData => ({
         labels: [...prevData.labels, `S ${newLabel}`].slice(-20), // Keep last 20 entries
         datasets: prevData.datasets.map((dataset, index) => {
           let data;
-          if (index === 0) data = [...dataset.data, gyroX];
-          else if (index === 1) data = [...dataset.data, gyroY];
-          else data = [...dataset.data, gyroZ];
+          if (index === 0) data = [...dataset.data, accelX];
+          else if (index === 1) data = [...dataset.data, accelY];
+          else data = [...dataset.data, accelZ];
           return { ...dataset, data: data.slice(-20) }; // Keep last 20 data points for each axis
         }),
       }));
@@ -66,7 +65,7 @@ const OrientationChart = () => {
         ticks: {
           color: "#ffffff",
           font: {
-            size: 10, // Decreased font size for Y-axis labels
+            size: 10, // Adjust font size for Y-axis labels
           },
         },
       },
@@ -77,7 +76,7 @@ const OrientationChart = () => {
         ticks: {
           color: "#ffffff",
           font: {
-            size: 10, // Decreased font size for X-axis labels
+            size: 10, // Adjust font size for X-axis labels
           },
         },
       },
@@ -87,7 +86,7 @@ const OrientationChart = () => {
         labels: {
           color: "#ffffff",
           font: {
-            size: 10, // Decreased font size for legend labels
+            size: 10, // Adjust font size for legend labels
           },
         },
       },
@@ -109,4 +108,4 @@ const OrientationChart = () => {
   );
 };
 
-export default OrientationChart;
+export default AccelerationChart;

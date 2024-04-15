@@ -4,103 +4,79 @@
 
 .dashboard-container {
   display: grid;
-  grid-template-columns: 60% 40%; /* Two equal columns */
+  grid-template-columns: 3fr 2fr;
+  gap: 10px;
   height: 100vh;
-  margin: 0;
-  background-color: #141414; /* Dark background color */
-  overflow: auto;
+  background-color: #000000;
+  overflow: hidden;
+  color: #E0E0E0;
+  padding: 0;
+}
+
+.left-half, .right-half {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.right-half {
+  padding-right: 20px;
+  padding-top: 20px;
+}
+
+.left-half {
+  padding: 10px;
+
 }
 
 .row {
   display: flex;
-  flex-wrap: wrap; /* Allows child elements to wrap if needed */
-  align-items: stretch; /* Stretches children to fill the container */
-  height: 100%; /* Use available space */
+  flex-wrap: wrap;
+  align-items: stretch;
 }
 
-.row > div {
-  flex: 1; /* Allows children to grow and fill the row evenly */
-  overflow: auto; /* Manages content overflow */
-}
-
-
-.right-half {
-  display: grid;
-  grid-template-rows: repeat(2, 1fr); /* Two equal rows for telemetry and GPS */
-  padding: 10px; /* Padding inside the right half */
-}
-
-.left-half, .right-half {
-  height: 100%; /* Ensure they take up the full height */
-  display: flex;
-  flex-direction: column;
-}
-
-.component, .telemetry-container, .location-container {
-  background-color: #282828; /* Slightly lighter dark background for components */
-  color: #FFFFFF; /* Text color */
-  border: 1px solid #141414; /* Border color */
-  border-radius: 4px; /* Border radius for rounded corners */
-  /* padding: 10px; Padding inside components */
-  overflow: hidden; /* Prevents content from overflowing */
-}
-
-.telemetry-container, .location-container {
-  grid-column: 1 / 2; /* Stretches across the available columns */
-}
-
-/* Specific styling for components to center content */
 .component {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 35vh;
+  height: 200px;
 }
 
-.row{
-  display: flex;
-  align-items: flex-start;
+@media (max-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .left-half, .right-half {
+    order: 1;
+  }
 }
 
 .team-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #FFFFFF;
-  padding: 20px;
+  padding: 10px;
 }
 
 .team-name {
-  background-color: #9553ff; /* Adjust background color */
+  background-color: #9553ff;
   color: white;
-  border: none;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
   border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 .team-logo {
-  max-width: 100px; /* Adjust as needed for size */
+  width: 100px;
   height: auto;
-  border-radius: 50%; /* Rounded corners for circular shape */
-}
-/* Adjust the grid layout for responsive design */
-@media (max-width: 768px) {
-  .dashboard-container {
-    grid-template-columns: 1fr; /* One column layout for smaller screens */
-  }
-  
-  .right-half {
-    grid-template-rows: 1fr; /* Stacks telemetry and GPS vertically */
-  }
-  
-  .left-half, .right-half {
-    order: 1; /* Ensures the left side is on top on smaller screens */
-  }
+  border-radius: 50%;
 }
 
+.team-logo img {
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+}

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import markerImage from "../../assets/team-logo.png"
+import markerImage from "../../assets/marker.png"
 import { useGlobalContext } from "../../context/appContext";
 
 let map;
 let marker;
-let gnss_lon = 77.2295 , gnss_lat = 28.6129;
+let gnss_lon = 72.496275 , gnss_lat =  23.1076436;
 const Location = () => {
 
 
@@ -58,14 +58,13 @@ const Location = () => {
 
   useEffect(() => {
     map = new google.maps.Map(document.getElementById("map"), {
-      center: { lat: 28.6129, lng: 77.2295 },
+      center: { lat: 23.1076436, lng: 72.496275 },
       zoom: 15,
     });
-
     // addPath(map);
   }, []);
 
-  return <div id="map" style={{ height: "100%", width: "100%  " }}></div>;
+  return <div id="map" style={{ height: "100%", width: "100% ", borderRadius: '8px' }}></div>;
 };
 
 export default Location;
