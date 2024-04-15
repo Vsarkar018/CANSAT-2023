@@ -12,7 +12,6 @@ const AccelerationChart = () => {
         data: [],
         fill: false,
         borderColor: '#E57373',
-        borderWidth: 2,
         tension: 0.1,
       },
       {
@@ -20,7 +19,6 @@ const AccelerationChart = () => {
         data: [],
         fill: false,
         borderColor: '#81C784',
-        borderWidth: 2,
         tension: 0.1,
       },
       {
@@ -28,7 +26,6 @@ const AccelerationChart = () => {
         data: [],
         fill: false,
         borderColor: '#BA68C8',
-        borderWidth: 2,
         tension: 0.1,
       },
     ],
@@ -89,14 +86,6 @@ const AccelerationChart = () => {
             size: 10, // Adjust font size for legend labels
           },
         },
-      },
-    },
-    elements: {
-      line: {
-        borderWidth: 2,
-      },
-      point: {
-        backgroundColor: "#230046",
       },
     },
   };

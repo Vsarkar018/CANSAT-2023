@@ -16,7 +16,7 @@ const TelemetryDisplay = () => {
   useEffect(() => {
     socket.on('telemetry', (telemetryData) => {
       const newLines = telemetryData.split('\n').filter(line => line);
-      setTelemetryLines(prevLines => [...prevLines, ...newLines].slice(-12));
+      setTelemetryLines(prevLines => [...prevLines, ...newLines].slice(-10));
     });
 
     return () => socket.off('telemetry');
@@ -24,7 +24,7 @@ const TelemetryDisplay = () => {
 
   return (
     <div style={{
-      padding: '20px',
+      padding: '8px',
       maxWidth: '800px',
       height: '330px',
       margin: '0',
@@ -43,11 +43,11 @@ const TelemetryDisplay = () => {
         TELEMETRY DATA
       </div>
       <div style={{
-        fontSize: '9.1px',
+        fontSize: '9.5px',
         maxHeight: '400px',
         overflowY: 'auto',
         background: '#1F2226', // Slightly lighter dark for contrast against container
-        paddingLeft: '1px',
+        padding: '8px',
         borderRadius: '4px', // Rounded corners inside scrollable
         border: '1px solid #333' // Subtle border for definition
       }}>

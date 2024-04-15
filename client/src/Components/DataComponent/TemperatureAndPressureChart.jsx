@@ -45,7 +45,7 @@ const TemperatureAndPressureChart = () => {
                 yAxisID: 'yTemperature',
               },
               {
-                label: "Pressure",
+                label: "Pressure (Pa)",
                 data: pressureData,
                 fill: false,
                 borderColor: 'rgb(75, 192, 192)',
@@ -60,15 +60,13 @@ const TemperatureAndPressureChart = () => {
                 type: 'linear',
                 display: true,
                 position: 'right',
-                min: 0, // Start from zero
-                // Customize further as needed
+                min: 0, 
               },
               yPressure: {
                 type: 'linear',
                 display: true,
                 position: 'left',
-                min: 0, // Start from zero
-                // Customize further as needed
+                min: 0,
               },
               x: {
                 min: 0, // Start from zero

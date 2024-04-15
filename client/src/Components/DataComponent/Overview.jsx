@@ -22,77 +22,77 @@ const Overview = () => {
         label: "BOOT MODE", 
         color: "bg-gray-600", 
         borderColor: "border-gray-600", 
-        textColor: "text-gray-900", 
+        textColor: "text-gray-600", 
         background: "#F9FAFB" 
     },
     "1": { 
         label: "TESTING DONE", 
         color: "bg-blue-600", 
         borderColor: "border-blue-600", 
-        textColor: "text-blue-900", 
+        textColor: "text-blue-600", 
         background: "#DBEAFE" 
     },
     "2": { 
         label: "READY FOR LAUNCH", 
         color: "bg-green-600", 
         borderColor: "border-green-600", 
-        textColor: "text-green-900", 
+        textColor: "text-green-600", 
         background: "#DCFCE7" 
     },
     "3": { 
         label: "ASCENT", 
         color: "bg-orange-600", 
         borderColor: "border-orange-600", 
-        textColor: "text-orange-900", 
+        textColor: "text-orange-600", 
         background: "#FFEDD5" 
     },
     "4": { 
         label: "APOGEE REACHED", 
         color: "bg-red-600", 
         borderColor: "border-red-600", 
-        textColor: "text-red-900", 
+        textColor: "text-red-600", 
         background: "#FEE2E2" 
     },
     "5": { 
         label: "DESCENT", 
         color: "bg-purple-600", 
         borderColor: "border-purple-600", 
-        textColor: "text-purple-900", 
+        textColor: "text-purple-600", 
         background: "#EDE9FE" 
     },
     "6": { 
         label: "BUZZER ACT", 
         color: "bg-yellow-600", 
         borderColor: "border-yellow-600", 
-        textColor: "text-yellow-900", 
+        textColor: "text-yellow-600", 
         background: "#FEF3C7" 
     },
     "7": { 
         label: "TOUCHDOWN", 
         color: "bg-teal-600", 
         borderColor: "border-teal-600", 
-        textColor: "text-teal-900", 
+        textColor: "text-teal-600", 
         background: "#CCFBF1" 
     },
     "15": { 
         label: "P1 EJECTED", 
         color: "bg-pink-600", 
         borderColor: "border-pink-600", 
-        textColor: "text-pink-900", 
+        textColor: "text-pink-600", 
         background: "#FCE7F3" 
     },
     "16": { 
         label: "GYRO INIT", 
         color: "bg-indigo-600", 
         borderColor: "border-indigo-600", 
-        textColor: "text-indigo-900", 
+        textColor: "text-indigo-600", 
         background: "#E0E7FF" 
     },
     "17": { 
         label: "P2 EJECTED", 
         color: "bg-lime-600", 
         borderColor: "border-lime-600", 
-        textColor: "text-lime-900", 
+        textColor: "text-lime-600", 
         background: "#ECFCCB" 
     }
 };
@@ -132,7 +132,7 @@ const Overview = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ telemetryFlag }),
+      body: JSON.stringify({ telemetryFlag:1 }),
     });
     
     if (response.ok) {
@@ -143,12 +143,12 @@ const Overview = () => {
     }
   };
   const actuateParachute2 = async () => {
-    const response = await fetch('/P2', {
+    const response = await fetch('/p2', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ flag: 1 })
+      body: JSON.stringify({ p2:9 })
     });
 
     if (response.ok) {
@@ -190,7 +190,7 @@ const Overview = () => {
         </button>
         
         <div>
-        <button className={`border-2 ${missionState.borderColor} px-4 py-2 rounded-full flex items-center justify-center`}
+        <button className={`border-2 ${missionState.borderColor} ${missionState.textColor} px-4 py-2 rounded-full flex items-center justify-center`}
           style={{
             backgroundColor: missionStarted ? missionState.background : "transparent",
             color: missionState.textColor // Assuming you set textColor in your state management

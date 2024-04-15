@@ -11,24 +11,21 @@ const OrientationChart = () => {
         label: "X Orientation",
         data: [],
         fill: false,
-        borderColor: '#FF6384', // Red for X
-        borderWidth: 2,
+        borderColor: '#FF6384', 
         tension: 0.1,
       },
       {
         label: "Y Orientation",
         data: [],
         fill: false,
-        borderColor: '#36A2EB', // Blue for Y
-        borderWidth: 2,
+        borderColor: '#36A2EB', 
         tension: 0.1,
       },
       {
         label: "Z Orientation",
         data: [],
         fill: false,
-        borderColor: '#FFCE56', // Yellow for Z
-        borderWidth: 2,
+        borderColor: '#FFCE56', 
         tension: 0.1,
       },
     ],
@@ -90,14 +87,6 @@ const OrientationChart = () => {
             size: 10, // Decreased font size for legend labels
           },
         },
-      },
-    },
-    elements: {
-      line: {
-        borderWidth: 2,
-      },
-      point: {
-        backgroundColor: "#230046",
       },
     },
   };

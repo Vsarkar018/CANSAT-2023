@@ -11,7 +11,6 @@ const Speed = () => {
         label: "Speed (m/s)",
         data: [], // Speed data for Y-axis
         borderColor: 'rgb(54, 162, 235)', // A different color for speed
-        borderWidth: 2,
         tension: 0.1, // Smoothens the line
         fill: false,
       },
@@ -59,14 +58,6 @@ const Speed = () => {
         labels: {
           color: "#ffffff", // Styling legend labels
         },
-      },
-    },
-    elements: {
-      line: {
-        borderWidth: 2,
-      },
-      point: {
-        backgroundColor: "#230046",
       },
     },
   };

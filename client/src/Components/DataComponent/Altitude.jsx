@@ -13,7 +13,6 @@ const Altitude = () => {
         data: [],
         fill: false,
         borderColor: '#DA70D6', // A different color for altitude
-        borderWidth: 2,
         tension: 0.1,
       },
     ],
@@ -47,6 +46,7 @@ const Altitude = () => {
       },
       y: {
         beginAtZero: true, // Start the scale from zero
+        max: 1000,
         grid: {
           color: "#282828", // Use a color from your palette
         },
